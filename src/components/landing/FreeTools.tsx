@@ -1,0 +1,38 @@
+import { BookOpen, Table, ListChecks, Download } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+const tools = [
+  { icon: BookOpen, title: "E-book: Descomplicando a jornada do casamento", desc: "Guia completo com dicas de especialistas." },
+  { icon: Table, title: "Planilha financeira completa", desc: "Controle todos os gastos do seu evento." },
+  { icon: ListChecks, title: "Checklist do casamento", desc: "Tarefas organizadas mês a mês." },
+];
+
+const FreeTools = () => (
+  <section className="py-20">
+    <div className="container mx-auto px-4">
+      <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-4">Ferramentas gratuitas</h2>
+      <p className="text-center text-muted-foreground font-body mb-12 max-w-lg mx-auto">
+        Baixe agora e comece a organizar seu casamento.
+      </p>
+      <div className="grid md:grid-cols-3 gap-6">
+        {tools.map((t, i) => (
+          <Card key={i} className="text-center hover:shadow-lg transition-shadow">
+            <CardContent className="p-8 space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-gold/10 flex items-center justify-center">
+                <t.icon className="h-8 w-8 text-gold" />
+              </div>
+              <h3 className="font-display font-semibold text-lg">{t.title}</h3>
+              <p className="text-sm text-muted-foreground font-body">{t.desc}</p>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" /> Baixar grátis
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+export default FreeTools;
