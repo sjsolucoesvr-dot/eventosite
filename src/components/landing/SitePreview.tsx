@@ -14,30 +14,30 @@ const SitePreview = () => {
   const t = themes[active];
 
   return (
-    <section className="py-20 bg-card">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-4">
+    <section className="py-28">
+      <div className="max-w-6xl mx-auto px-6">
+        <p className="text-xs font-body uppercase tracking-widest text-primary text-center mb-3">PREVIEW</p>
+        <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
           Veja como fica o site do seu evento
         </h2>
-        <p className="text-center text-muted-foreground font-body mb-10 max-w-lg mx-auto">
+        <p className="text-center text-muted-foreground font-body mb-12 max-w-lg mx-auto">
           Escolha um tema e veja a mágica acontecer.
         </p>
 
-        {/* Browser mockup */}
         <div className="max-w-2xl mx-auto">
-          <div className="rounded-t-xl bg-foreground/90 px-4 py-3 flex items-center gap-2">
+          <div className="rounded-t-2xl bg-foreground/90 px-4 py-3 flex items-center gap-2">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-destructive/80" />
               <div className="w-3 h-3 rounded-full bg-secondary" />
               <div className="w-3 h-3 rounded-full bg-success" />
             </div>
-            <div className="flex-1 mx-4 bg-foreground/30 rounded-md px-3 py-1 text-xs text-card/60 font-body">
+            <div className="flex-1 mx-4 bg-foreground/30 rounded-md px-3 py-1 text-xs text-white/40 font-body">
               eventosite.com/ana-e-pedro
             </div>
           </div>
           <div
-            className="rounded-b-xl border-x border-b p-8 md:p-12 text-center transition-all duration-500 space-y-4"
-            style={{ background: t.bg }}
+            className="rounded-b-2xl p-8 md:p-12 text-center transition-all duration-500 space-y-4"
+            style={{ background: t.bg, border: "1px solid rgba(0,0,0,0.06)", borderTop: "none" }}
           >
             <Heart className="h-8 w-8 mx-auto transition-colors duration-500" style={{ color: t.primary }} />
             <p className="text-sm tracking-widest uppercase font-body" style={{ color: t.primary, fontFamily: t.font }}>
@@ -51,7 +51,7 @@ const SitePreview = () => {
               <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> São Paulo, SP</span>
             </div>
             <button
-              className="mt-4 px-8 py-3 rounded-full text-sm font-body font-medium text-card transition-colors duration-500"
+              className="mt-4 px-8 py-3 rounded-full text-sm font-body font-medium text-white transition-all duration-200 hover:-translate-y-0.5"
               style={{ background: t.primary }}
             >
               Confirmar presença
@@ -59,15 +59,14 @@ const SitePreview = () => {
           </div>
         </div>
 
-        {/* Theme selector */}
         <div className="flex flex-wrap justify-center gap-3 mt-8">
           {themes.map((theme, i) => (
             <button
               key={theme.name}
               onClick={() => setActive(i)}
-              className={`px-5 py-2.5 rounded-full text-sm font-body border-2 transition-all ${
+              className={`px-5 py-2.5 rounded-full text-sm font-body border transition-all duration-200 ${
                 i === active
-                  ? "border-primary bg-primary/10 text-primary font-medium"
+                  ? "border-primary bg-primary/[0.08] text-primary font-medium"
                   : "border-border bg-card text-muted-foreground hover:border-primary/30"
               }`}
             >

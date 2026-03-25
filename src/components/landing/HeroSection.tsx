@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Calendar, Users, ArrowRight, Sparkles } from "lucide-react";
+import { Heart, Calendar, Users, ArrowRight, Sparkles, CheckCircle2, Gift } from "lucide-react";
 import { useState, useEffect } from "react";
 import { differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { Link } from "react-router-dom";
@@ -28,48 +28,83 @@ const HeroSection = () => {
   const theme = themes[activeTheme];
 
   return (
-    <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5" />
-      <div className="absolute top-20 right-0 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-gold/5 blur-3xl" />
-
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left */}
+    <section
+      className="relative pt-32 pb-24 overflow-hidden"
+      style={{
+        background: `radial-gradient(ellipse at 20% 50%, rgba(232, 84, 122, 0.06) 0%, transparent 60%),
+                     radial-gradient(ellipse at 80% 20%, rgba(201, 169, 110, 0.06) 0%, transparent 60%),
+                     hsl(40, 20%, 98%)`,
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-[55%_45%] gap-12 items-center">
+          {/* Left — text */}
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-body font-medium">
-              <Sparkles className="h-4 w-4" />
+            <div className="inline-flex items-center gap-2 bg-primary/[0.08] text-primary px-4 py-1.5 rounded-full text-xs font-body font-medium">
+              <Sparkles className="h-3.5 w-3.5" />
               Mais de 10.000 casamentos organizados
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight">
-              Crie o site do seu casamento de forma prática e{" "}
-              <span className="text-primary">inesquecível</span>
+
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground leading-tight tracking-tight">
+              Crie o{" "}
+              <em className="text-primary not-italic font-bold italic">site do seu casamento</em>{" "}
+              de forma prática e inesquecível
             </h1>
-            <p className="text-lg text-muted-foreground font-body max-w-lg">
+
+            <p className="text-lg text-muted-foreground font-body leading-relaxed max-w-[480px]">
               Personalize o site, gerencie convidados, crie sua lista de presentes e organize tudo em um só lugar.
             </p>
+
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="gap-2" asChild>
+              <Button
+                size="lg"
+                className="rounded-full px-8 py-3.5 font-medium gap-2 transition-all duration-300 hover:-translate-y-0.5"
+                asChild
+              >
                 <Link to="/dashboard">
                   Criar meu site grátis <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="gap-2">
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full px-8 py-3.5 border-border text-foreground/70 hover:bg-muted"
+              >
                 Ver exemplo ao vivo
               </Button>
+            </div>
+
+            {/* Social proof */}
+            <div className="flex items-center gap-3 pt-2">
+              <div className="flex -space-x-2">
+                {["A", "M", "C", "R"].map((initial, i) => (
+                  <div
+                    key={i}
+                    className="w-8 h-8 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs font-body font-medium text-primary"
+                  >
+                    {initial}
+                  </div>
+                ))}
+              </div>
+              <span className="text-sm text-muted-foreground font-body">
+                <strong className="text-foreground">5.000+</strong> casais já usam
+              </span>
             </div>
           </div>
 
           {/* Right — mockup */}
           <div className="relative">
             <div
-              className="rounded-2xl shadow-2xl overflow-hidden border-4 border-card animate-float transition-all duration-500"
-              style={{ background: theme.bg }}
+              className="rounded-3xl overflow-hidden p-6 transition-all duration-500"
+              style={{
+                background: "rgba(255, 255, 255, 0.9)",
+                backdropFilter: "blur(24px)",
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.08)",
+              }}
             >
-              <div className="p-6 md:p-8 text-center space-y-4">
-                <Heart className="h-8 w-8 mx-auto" style={{ color: theme.primary }} />
-                <p className="text-sm font-body tracking-widest uppercase" style={{ color: theme.accent }}>
+              <div className="text-center space-y-4">
+                <Heart className="h-7 w-7 mx-auto" style={{ color: theme.primary }} />
+                <p className="text-xs font-body tracking-widest uppercase" style={{ color: theme.accent }}>
                   Convidam para o casamento
                 </p>
                 <h3 className="text-3xl font-display font-bold" style={{ color: theme.primary }}>
@@ -91,8 +126,8 @@ const HeroSection = () => {
                   ].map((item) => (
                     <div key={item.label} className="text-center">
                       <div
-                        className="text-2xl font-display font-bold rounded-lg w-16 h-16 flex items-center justify-center"
-                        style={{ background: `${theme.primary}15`, color: theme.primary }}
+                        className="text-2xl font-display font-bold rounded-xl w-16 h-16 flex items-center justify-center"
+                        style={{ background: `${theme.primary}10`, color: theme.primary }}
                       >
                         {item.value}
                       </div>
@@ -101,10 +136,39 @@ const HeroSection = () => {
                   ))}
                 </div>
 
-                <Button className="mt-4" style={{ background: theme.primary }}>
+                <button
+                  className="mt-4 px-6 py-2.5 rounded-full text-sm font-body font-medium text-white transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ background: theme.primary }}
+                >
                   Confirmar presença
-                </Button>
+                </button>
               </div>
+            </div>
+
+            {/* Floating card — top right */}
+            <div
+              className="absolute -top-3 -right-3 md:top-4 md:-right-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
+              style={{
+                background: "rgba(255, 255, 255, 0.80)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm font-body font-medium text-foreground">23 confirmações</span>
+            </div>
+
+            {/* Floating card — bottom left */}
+            <div
+              className="absolute -bottom-3 -left-3 md:bottom-8 md:-left-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
+              style={{
+                background: "rgba(255, 255, 255, 0.80)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+              }}
+            >
+              <Gift className="h-4 w-4 text-primary" />
+              <span className="text-sm font-body font-medium text-foreground">R$ 2.400 recebidos</span>
             </div>
 
             {/* Theme selector */}
@@ -113,8 +177,10 @@ const HeroSection = () => {
                 <button
                   key={t.name}
                   onClick={() => setActiveTheme(i)}
-                  className={`rounded-lg px-4 py-2 text-xs font-body border-2 transition-all ${
-                    i === activeTheme ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                  className={`rounded-full px-4 py-2 text-xs font-body border transition-all duration-200 ${
+                    i === activeTheme
+                      ? "border-primary bg-primary/[0.08] text-primary font-medium"
+                      : "border-border bg-card text-muted-foreground hover:border-primary/30"
                   }`}
                 >
                   {t.name}
