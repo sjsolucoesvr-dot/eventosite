@@ -7,27 +7,30 @@ const testimonials = [
 ];
 
 const Testimonials = () => (
-  <section className="py-20 bg-primary/5">
-    <div className="container mx-auto px-4">
-      <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-12">
+  <section className="py-28">
+    <div className="max-w-6xl mx-auto px-6">
+      <p className="text-xs font-body uppercase tracking-widest text-primary text-center mb-3">DEPOIMENTOS</p>
+      <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-16">
         O que nossos casais dizem
       </h2>
       <div className="grid md:grid-cols-3 gap-6">
         {testimonials.map((t, i) => (
-          <div key={i} className="bg-card rounded-2xl p-6 shadow-sm border space-y-4">
+          <div key={i} className="card-premium p-8 space-y-4">
+            {/* Decorative quote */}
+            <span className="text-6xl font-display text-primary/30 leading-none select-none">"</span>
+            <p className="text-base font-body text-foreground/80 leading-relaxed -mt-4">{t.text}</p>
             <div className="flex gap-1">
               {Array.from({ length: 5 }).map((_, j) => (
                 <Star key={j} className="h-4 w-4 fill-gold text-gold" />
               ))}
             </div>
-            <p className="text-sm font-body text-foreground/80 leading-relaxed">"{t.text}"</p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display font-bold text-sm">
+            <div className="flex items-center gap-3 pt-2">
+              <div className="w-11 h-11 rounded-full bg-primary/[0.08] flex items-center justify-center text-primary font-body font-medium text-sm">
                 {t.name.charAt(0)}
               </div>
               <div>
-                <p className="font-body font-medium text-sm">{t.name}</p>
-                <p className="text-xs text-muted-foreground font-body">{t.city}</p>
+                <p className="font-body font-medium text-sm text-foreground">{t.name}</p>
+                <p className="text-sm text-muted-foreground font-body">{t.city}</p>
               </div>
             </div>
           </div>

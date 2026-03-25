@@ -10,16 +10,17 @@ const faqs = [
 ];
 
 const FAQ = () => (
-  <section className="py-20 bg-card">
-    <div className="container mx-auto px-4 max-w-3xl">
-      <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-12">Perguntas frequentes</h2>
-      <Accordion type="single" collapsible className="space-y-2">
+  <section className="py-28">
+    <div className="max-w-6xl mx-auto px-6 max-w-3xl">
+      <p className="text-xs font-body uppercase tracking-widest text-primary text-center mb-3">FAQ</p>
+      <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-16">Perguntas frequentes</h2>
+      <Accordion type="single" collapsible className="space-y-3">
         {faqs.map((f, i) => (
-          <AccordionItem key={i} value={`faq-${i}`} className="border rounded-xl px-4">
-            <AccordionTrigger className="font-body font-medium text-left hover:no-underline">
+          <AccordionItem key={i} value={`faq-${i}`} className="card-premium px-6 border-none">
+            <AccordionTrigger className="font-body font-medium text-left hover:no-underline text-foreground">
               {f.q}
             </AccordionTrigger>
-            <AccordionContent className="font-body text-muted-foreground">
+            <AccordionContent className="font-body text-muted-foreground leading-relaxed">
               {f.a}
             </AccordionContent>
           </AccordionItem>

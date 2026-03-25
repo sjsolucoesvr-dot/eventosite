@@ -7,23 +7,26 @@ const steps = [
 ];
 
 const HowItWorks = () => (
-  <section className="py-20 bg-card">
-    <div className="container mx-auto px-4">
-      <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-4">Como funciona</h2>
-      <p className="text-center text-muted-foreground font-body mb-12 max-w-lg mx-auto">
-        Em apenas 3 passos simples, seu site estará pronto.
+  <section className="py-24">
+    <div className="max-w-6xl mx-auto px-6">
+      <p className="text-xs font-body uppercase tracking-widest text-primary text-center mb-3">COMO FUNCIONA</p>
+      <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
+        Em apenas 3 passos simples
+      </h2>
+      <p className="text-center text-muted-foreground font-body mb-16 max-w-lg mx-auto">
+        Seu site estará pronto em minutos.
       </p>
       <div className="grid md:grid-cols-3 gap-8">
         {steps.map((s, i) => (
           <div key={i} className="text-center space-y-4">
-            <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <s.icon className="h-9 w-9 text-primary" />
+            <div className="mx-auto w-20 h-20 rounded-2xl card-premium flex items-center justify-center">
+              <s.icon className="h-8 w-8 text-gold" />
             </div>
             <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-body font-bold flex items-center justify-center mx-auto text-sm">
               {i + 1}
             </div>
-            <h3 className="text-xl font-display font-semibold">{s.title}</h3>
-            <p className="text-muted-foreground font-body text-sm">{s.desc}</p>
+            <h3 className="text-xl font-display font-semibold text-foreground">{s.title}</h3>
+            <p className="text-muted-foreground font-body text-sm max-w-xs mx-auto">{s.desc}</p>
           </div>
         ))}
       </div>

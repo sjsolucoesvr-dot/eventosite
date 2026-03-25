@@ -9,30 +9,33 @@ const features = [
 ];
 
 const RSVPSection = () => (
-  <section className="py-20">
-    <div className="container mx-auto px-4">
+  <section className="py-28">
+    <div className="max-w-6xl mx-auto px-6">
       <div className="grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-            Confirmação de presença <span className="text-primary">simplificada</span>
+          <p className="text-xs font-body uppercase tracking-widest text-primary mb-3">RSVP</p>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
+            Confirmação de presença <em className="text-primary italic">simplificada</em>
           </h2>
-          <p className="text-muted-foreground font-body mb-8">
+          <p className="text-muted-foreground font-body mb-8 leading-relaxed">
             Gerencie seus convidados de forma prática. Saiba quem vai, quem não vai e organize mesas com facilidade.
           </p>
           <div className="space-y-4 mb-8">
             {features.map((f, i) => (
               <div key={i} className="flex items-center gap-3">
                 <f.icon className="h-5 w-5 text-success" />
-                <span className="font-body text-sm">{f.text}</span>
+                <span className="font-body text-sm text-foreground">{f.text}</span>
               </div>
             ))}
           </div>
-          <Button className="gap-2">Ver como funciona</Button>
+          <Button className="rounded-full px-8 gap-2 transition-all duration-200 hover:-translate-y-0.5">
+            Ver como funciona
+          </Button>
         </div>
-        {/* Illustrative card */}
-        <div className="bg-card rounded-2xl border shadow-xl p-6 space-y-4">
+
+        <div className="card-premium p-8 space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-display font-semibold text-lg">Convidados</h4>
+            <h4 className="font-display font-semibold text-lg text-foreground">Convidados</h4>
             <span className="text-sm font-body text-muted-foreground">142 / 200</span>
           </div>
           <div className="w-full bg-muted rounded-full h-3">

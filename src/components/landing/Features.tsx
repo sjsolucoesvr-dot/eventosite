@@ -1,38 +1,40 @@
 import { Palette, CheckSquare, Gift, BarChart3, ListChecks, BookOpen, Store, Smartphone, Lock } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
 const features = [
-  { icon: Palette, title: "Site personalizado", desc: "Temas, cores, fontes e fotos editáveis" },
-  { icon: CheckSquare, title: "RSVP / Confirmação", desc: "Gerencie sua lista de convidados" },
-  { icon: Gift, title: "Lista de presentes com PIX", desc: "Receba presentes em dinheiro direto na conta" },
-  { icon: BarChart3, title: "Planilha financeira", desc: "Controle total dos gastos do casamento" },
-  { icon: ListChecks, title: "Checklist inteligente", desc: "Tarefas organizadas por prazo" },
-  { icon: BookOpen, title: "E-book exclusivo", desc: "Guia completo para organizar seu casamento" },
-  { icon: Store, title: "Marketplace de fornecedores", desc: "Fotógrafos, buffets, decoradores" },
-  { icon: Smartphone, title: "100% responsivo", desc: "Funciona perfeitamente no celular" },
-  { icon: Lock, title: "Site privado ou público", desc: "Controle quem pode ver" },
+  { icon: Palette, title: "Site personalizado", desc: "Temas, cores, fontes e fotos editáveis. Crie um site único que reflete a personalidade do seu evento.", large: true },
+  { icon: CheckSquare, title: "RSVP / Confirmação", desc: "Gerencie sua lista de convidados com praticidade." },
+  { icon: Gift, title: "Lista de presentes com PIX", desc: "Receba presentes em dinheiro direto na conta." },
+  { icon: BarChart3, title: "Planilha financeira", desc: "Controle total dos gastos do casamento." },
+  { icon: ListChecks, title: "Checklist inteligente", desc: "Tarefas organizadas por prazo." },
+  { icon: BookOpen, title: "E-book exclusivo", desc: "Guia completo para organizar seu casamento." },
+  { icon: Store, title: "Marketplace de fornecedores", desc: "Fotógrafos, buffets, decoradores — tudo em um só lugar. Encontre os melhores profissionais da sua região.", large: true },
+  { icon: Smartphone, title: "100% responsivo", desc: "Funciona perfeitamente no celular." },
+  { icon: Lock, title: "Site privado ou público", desc: "Controle quem pode ver." },
 ];
 
 const Features = () => (
-  <section id="funcionalidades" className="py-20">
-    <div className="container mx-auto px-4">
-      <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-4">Funcionalidades em destaque</h2>
-      <p className="text-center text-muted-foreground font-body mb-12 max-w-lg mx-auto">
-        Tudo que você precisa para organizar seu evento, em uma única plataforma.
+  <section id="funcionalidades" className="py-28">
+    <div className="max-w-6xl mx-auto px-6">
+      <p className="text-xs font-body uppercase tracking-widest text-primary text-center mb-3">FUNCIONALIDADES</p>
+      <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
+        Tudo que você precisa em um só lugar
+      </h2>
+      <p className="text-center text-muted-foreground font-body mb-16 max-w-lg mx-auto">
+        Uma plataforma completa para organizar seu evento.
       </p>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div className="grid md:grid-cols-3 gap-6">
         {features.map((f, i) => (
-          <Card key={i} className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300">
-            <CardContent className="p-6 flex gap-4 items-start">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                <f.icon className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-display font-semibold text-lg mb-1">{f.title}</h3>
-                <p className="text-sm text-muted-foreground font-body">{f.desc}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div
+            key={i}
+            className={`card-premium card-premium-hover p-8 space-y-4 ${f.large ? "md:col-span-2" : ""}`}
+          >
+            <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center">
+              <f.icon className="h-6 w-6 text-gold" />
+            </div>
+            <h3 className="font-display font-semibold text-lg text-foreground">{f.title}</h3>
+            <p className="text-sm text-muted-foreground font-body leading-relaxed">{f.desc}</p>
+          </div>
         ))}
       </div>
     </div>
