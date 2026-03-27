@@ -168,7 +168,7 @@ const HeroSection = () => {
               }}
             >
               <Gift className="h-4 w-4 text-primary" />
-              <span className="text-sm font-body font-medium text-foreground">R$ 2.400 recebidos</span>
+              <span className="text-sm font-body font-medium text-foreground">​</span>
             </div>
 
             {/* Theme selector */}
