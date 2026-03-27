@@ -50,14 +50,14 @@ const Navbar = () => {
             className="rounded-full border-border hover:bg-muted"
             asChild
           >
-            <Link to="/dashboard">Entrar</Link>
+            <Link to="/login">Entrar</Link>
           </Button>
           <Button
             size="sm"
             className="rounded-full px-6 py-2.5 hover:opacity-90 transition-all duration-200 hover:-translate-y-0.5"
             asChild
           >
-            <Link to="/dashboard">Criar meu site grátis</Link>
+            <Link to="/cadastro">Criar meu site grátis</Link>
           </Button>
         </div>
 
@@ -83,10 +83,10 @@ const Navbar = () => {
           ))}
           <div className="flex gap-2 pt-2">
             <Button variant="outline" size="sm" className="flex-1 rounded-full" asChild>
-              <Link to="/dashboard">Entrar</Link>
+              <Link to="/login">Entrar</Link>
             </Button>
             <Button size="sm" className="flex-1 rounded-full" asChild>
-              <Link to="/dashboard">Criar meu site grátis</Link>
+              <Link to="/cadastro">Criar meu site grátis</Link>
             </Button>
           </div>
         </div>

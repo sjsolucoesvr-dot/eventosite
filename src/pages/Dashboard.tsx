@@ -7,17 +7,7 @@ import DashboardGuests from "@/pages/DashboardGuests";
 import DashboardGifts from "@/pages/DashboardGifts";
 import DashboardFinance from "@/pages/DashboardFinance";
 import DashboardChecklist from "@/pages/DashboardChecklist";
-
-const pageTitles: Record<string, string> = {
-  "": "Visão Geral",
-  site: "Meu Site",
-  guests: "Convidados",
-  gifts: "Lista de Presentes",
-  finance: "Financeiro",
-  checklist: "Checklist",
-  suppliers: "Fornecedores",
-  settings: "Configurações",
-};
+import DashboardSettings from "@/pages/DashboardSettings";
 
 const Dashboard = () => (
   <SidebarProvider>
@@ -36,6 +26,7 @@ const Dashboard = () => (
             <Route path="gifts" element={<div className="p-6"><DashboardGifts /></div>} />
             <Route path="finance" element={<div className="p-6"><DashboardFinance /></div>} />
             <Route path="checklist" element={<div className="p-6"><DashboardChecklist /></div>} />
+            <Route path="settings" element={<DashboardSettings />} />
           </Routes>
         </main>
       </div>

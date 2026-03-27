@@ -3,6 +3,7 @@ import { Heart, Calendar, Users, ArrowRight, Sparkles, CheckCircle2, Gift } from
 import { useState, useEffect } from "react";
 import { differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const themes = [
   { name: "Clássico", primary: "hsl(345, 75%, 62%)", accent: "hsl(37, 42%, 61%)", bg: "hsl(348, 100%, 98%)" },
@@ -36,13 +37,30 @@ const HeroSection = () => {
                      hsl(40, 20%, 98%)`,
       }}
     >
+      {/* Subtle celebration background */}
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1470338950318-40320a722782?w=1200&q=30')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      </div>
+
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-[55%_45%] gap-12 items-center">
           {/* Left — text */}
-          <div className="space-y-6">
+          <motion.div
+            className="space-y-6"
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             <div className="inline-flex items-center gap-2 bg-primary/[0.08] text-primary px-4 py-1.5 rounded-full text-xs font-body font-medium">
               <Sparkles className="h-3.5 w-3.5" />
-              Mais de 10.000 casamentos organizados
+              Plataforma completa para seu evento
             </div>
 
             <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground leading-tight tracking-tight">
@@ -61,7 +79,7 @@ const HeroSection = () => {
                 className="rounded-full px-8 py-3.5 font-medium gap-2 transition-all duration-300 hover:-translate-y-0.5"
                 asChild
               >
-                <Link to="/dashboard">
+                <Link to="/cadastro">
                   Criar meu site grátis <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -69,31 +87,22 @@ const HeroSection = () => {
                 size="lg"
                 variant="outline"
                 className="rounded-full px-8 py-3.5 border-border text-foreground/70 hover:bg-muted"
+                asChild
               >
-                Ver exemplo ao vivo
+                <Link to="/evento/ana-e-carlos">
+                  Ver exemplo ao vivo
+                </Link>
               </Button>
             </div>
-
-            {/* Social proof */}
-            <div className="flex items-center gap-3 pt-2">
-              <div className="flex -space-x-2">
-                {["A", "M", "C", "R"].map((initial, i) => (
-                  <div
-                    key={i}
-                    className="w-8 h-8 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs font-body font-medium text-primary"
-                  >
-                    {initial}
-                  </div>
-                ))}
-              </div>
-              <span className="text-sm text-muted-foreground font-body">
-                <strong className="text-foreground">​</strong> casais já usam
-              </span>
-            </div>
-          </div>
+          </motion.div>
 
           {/* Right — mockup */}
-          <div className="relative">
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
             <div
               className="rounded-3xl overflow-hidden p-6 transition-all duration-500"
               style={{
@@ -146,8 +155,11 @@ const HeroSection = () => {
             </div>
 
             {/* Floating card — top right */}
-            <div
+            <motion.div
               className="absolute -top-3 -right-3 md:top-4 md:-right-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.8 }}
               style={{
                 background: "rgba(255, 255, 255, 0.80)",
                 backdropFilter: "blur(12px)",
@@ -156,11 +168,14 @@ const HeroSection = () => {
             >
               <CheckCircle2 className="h-4 w-4 text-success" />
               <span className="text-sm font-body font-medium text-foreground">23 confirmações</span>
-            </div>
+            </motion.div>
 
             {/* Floating card — bottom left */}
-            <div
+            <motion.div
               className="absolute -bottom-3 -left-3 md:bottom-8 md:-left-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1 }}
               style={{
                 background: "rgba(255, 255, 255, 0.80)",
                 backdropFilter: "blur(12px)",
@@ -168,8 +183,8 @@ const HeroSection = () => {
               }}
             >
               <Gift className="h-4 w-4 text-primary" />
-              <span className="text-sm font-body font-medium text-foreground">​</span>
-            </div>
+              <span className="text-sm font-body font-medium text-foreground">12 presentes recebidos</span>
+            </motion.div>
 
             {/* Theme selector */}
             <div className="flex justify-center gap-3 mt-6">
@@ -187,7 +202,7 @@ const HeroSection = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

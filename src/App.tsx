@@ -7,6 +7,10 @@ import Index from "./pages/Index.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Marketplace from "./pages/Marketplace.tsx";
 import SupplierProfile from "./pages/SupplierProfile.tsx";
+import Login from "./pages/Login.tsx";
+import Cadastro from "./pages/Cadastro.tsx";
+import Onboarding from "./pages/Onboarding.tsx";
+import EventSite from "./pages/EventSite.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -19,9 +23,13 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard/*" element={<Dashboard />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/marketplace/fornecedor/:id" element={<SupplierProfile />} />
+          <Route path="/evento/:slug" element={<EventSite />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
