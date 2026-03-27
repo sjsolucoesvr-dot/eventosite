@@ -83,10 +83,10 @@ const Navbar = () => {
           ))}
           <div className="flex gap-2 pt-2">
             <Button variant="outline" size="sm" className="flex-1 rounded-full" asChild>
-              <Link to="/dashboard">Entrar</Link>
+              <Link to="/login">Entrar</Link>
             </Button>
             <Button size="sm" className="flex-1 rounded-full" asChild>
-              <Link to="/dashboard">Criar meu site grátis</Link>
+              <Link to="/cadastro">Criar meu site grátis</Link>
             </Button>
           </div>
         </div>
