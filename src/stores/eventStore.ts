@@ -98,10 +98,12 @@ export interface EventStore {
   giftTransactions: GiftTransaction[];
   expenses: Expense[];
   tasks: ChecklistTask[];
+  wallMessages: WallMessage[];
   budget: number;
   updateEvent: (partial: Partial<EventConfig>) => void;
   toggleTask: (id: number) => void;
   toggleSection: (id: string) => void;
+  addWallMessage: (name: string, message: string) => void;
 }
 
 const eventDate = addMonths(new Date(), 6);
