@@ -438,7 +438,7 @@ const EventSite = () => {
                 <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
               </div>
             </ScrollSection>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {availableGifts.map((gift, i) => (
                 <ScrollSection key={gift.id} delay={i * 0.08}>
                   <div
