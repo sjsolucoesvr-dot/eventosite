@@ -64,6 +64,13 @@ export interface EventTheme {
   primaryLight: string;
 }
 
+export interface WallMessage {
+  id: number;
+  name: string;
+  message: string;
+  date: string;
+}
+
 export interface EventConfig {
   name: string;
   slug: string;
@@ -77,8 +84,11 @@ export interface EventConfig {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;
+  bodyFontFamily: string;
   enabledSections: Record<string, boolean>;
   pixKey: string;
+  spotifyPlaylistUrl: string;
+  sectionColors: Record<string, { bg: string; text: string; accent: string }>;
 }
 
 export interface EventStore {
@@ -88,10 +98,12 @@ export interface EventStore {
   giftTransactions: GiftTransaction[];
   expenses: Expense[];
   tasks: ChecklistTask[];
+  wallMessages: WallMessage[];
   budget: number;
   updateEvent: (partial: Partial<EventConfig>) => void;
   toggleTask: (id: number) => void;
   toggleSection: (id: string) => void;
+  addWallMessage: (name: string, message: string) => void;
 }
 
 const eventDate = addMonths(new Date(), 6);
@@ -110,7 +122,16 @@ export const eventThemes: EventTheme[] = [
 const defaultSections: Record<string, boolean> = {
   hero: true, countdown: true, story: true, gallery: true, info: true,
   rsvp: true, gifts: true, location: true, message: true, footer: true,
+  playlist: true, wall: true,
 };
+
+const mockWallMessages: WallMessage[] = [
+  { id: 1, name: "Maria Silva", message: "Estou muito feliz por vocês! Que Deus abençoe essa união! 🥰", date: "15/03/2025" },
+  { id: 2, name: "João Santos", message: "Parabéns ao casal mais lindo! Ansiosos pelo grande dia!", date: "12/03/2025" },
+  { id: 3, name: "Fernanda Lima", message: "Vocês merecem toda a felicidade do mundo! ❤️", date: "18/03/2025" },
+  { id: 4, name: "Beatriz Almeida", message: "Que amor! Mal posso esperar para celebrar com vocês!", date: "20/03/2025" },
+  { id: 5, name: "Thiago Rocha", message: "Que esse dia seja apenas o começo de uma vida linda juntos! 🎉", date: "22/03/2025" },
+];
 
 const mockGuests: Guest[] = [
   { id: 1, name: "Maria Silva", email: "maria@email.com", phone: "(11) 99999-1234", status: "confirmed", companions: 1, dietary: "Vegetariana", confirmedAt: "10/03/2025" },
@@ -230,14 +251,18 @@ export const useEventStore = create<EventStore>((set) => ({
     primaryColor: "#C9A96E",
     secondaryColor: "#1A1A2E",
     fontFamily: "'Playfair Display', serif",
+    bodyFontFamily: "'DM Sans', sans-serif",
     enabledSections: { ...defaultSections },
     pixKey: "ana.carlos@email.com",
+    spotifyPlaylistUrl: "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M",
+    sectionColors: {},
   },
   guests: mockGuests,
   gifts: mockGifts,
   giftTransactions: mockTransactions,
   expenses: mockExpenses,
   tasks: mockTasks,
+  wallMessages: mockWallMessages,
   budget: 80000,
   updateEvent: (partial) =>
     set((state) => ({ event: { ...state.event, ...partial } })),
@@ -254,5 +279,12 @@ export const useEventStore = create<EventStore>((set) => ({
           [id]: !state.event.enabledSections[id],
         },
       },
+    })),
+  addWallMessage: (name, message) =>
+    set((state) => ({
+      wallMessages: [
+        { id: Date.now(), name, message, date: new Date().toLocaleDateString("pt-BR") },
+        ...state.wallMessages,
+      ],
     })),
 }));

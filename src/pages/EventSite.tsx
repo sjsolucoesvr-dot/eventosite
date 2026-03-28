@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useEventStore, eventThemes } from "@/stores/eventStore";
-import { Heart, Calendar, MapPin, Users, ChevronDown, Send, Gift, Clock, ArrowUp } from "lucide-react";
+import { Heart, Calendar, MapPin, Users, ChevronDown, Send, Gift, Clock, ArrowUp, Music, MessageCircle, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,13 +27,24 @@ const ScrollSection = ({ children, className = "", delay = 0 }: { children: Reac
   );
 };
 
+const SectionDivider = ({ color }: { color: string }) => (
+  <div className="flex items-center justify-center gap-4 mb-8">
+    <div className="h-px w-12" style={{ background: `${color}60` }} />
+    <Heart className="w-5 h-5" style={{ color }} />
+    <div className="h-px w-12" style={{ background: `${color}60` }} />
+  </div>
+);
+
 const EventSite = () => {
   const { slug } = useParams();
-  const { event, guests, gifts } = useEventStore();
+  const { event, guests, gifts, wallMessages, addWallMessage } = useEventStore();
   const [now, setNow] = useState(new Date());
   const [navVisible, setNavVisible] = useState(true);
   const [rsvpSent, setRsvpSent] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [wallName, setWallName] = useState("");
+  const [wallMsg, setWallMsg] = useState("");
+  const [showQR, setShowQR] = useState(false);
 
   const theme = eventThemes.find((t) => t.id === event.themeId) || eventThemes[0];
 
@@ -65,12 +76,24 @@ const EventSite = () => {
     event.enabledSections.gallery && { label: "Galeria", href: "#galeria" },
     event.enabledSections.info && { label: "Informações", href: "#informacoes" },
     event.enabledSections.rsvp && { label: "Confirmar Presença", href: "#rsvp" },
+    event.enabledSections.wall && { label: "Recados", href: "#recados" },
   ].filter(Boolean) as { label: string; href: string }[];
 
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const siteUrl = `${window.location.origin}/evento/${event.slug}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(siteUrl)}&color=${theme.primary.replace("#", "")}&bgcolor=${theme.primaryLight.replace("#", "")}`;
+
+  const handleWallSubmit = () => {
+    if (wallName.trim() && wallMsg.trim()) {
+      addWallMessage(wallName.trim(), wallMsg.trim());
+      setWallName("");
+      setWallMsg("");
+    }
+  };
 
   return (
     <div className="min-h-screen" style={{ fontFamily: event.fontFamily, background: theme.primaryLight }}>
@@ -79,7 +102,7 @@ const EventSite = () => {
         initial={{ y: 0 }}
         animate={{ y: navVisible ? 0 : -100 }}
         transition={{ duration: 0.3 }}
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        className="fixed top-0 left-0 right-0 z-50"
         style={{
           background: `${theme.primaryDark}CC`,
           backdropFilter: "blur(16px)",
@@ -90,20 +113,52 @@ const EventSite = () => {
           <span className="font-semibold text-sm" style={{ color: theme.primary }}>{event.name}</span>
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-xs font-medium transition-colors duration-200 hover:opacity-100 opacity-70"
-                style={{ color: theme.primaryLight }}
-              >
+              <a key={link.href} href={link.href} className="text-xs font-medium transition-colors duration-200 hover:opacity-100 opacity-70" style={{ color: theme.primaryLight }}>
                 {link.label}
               </a>
             ))}
+            <button onClick={() => setShowQR(!showQR)} className="opacity-70 hover:opacity-100 transition-opacity" title="QR Code">
+              <QrCode className="w-4 h-4" style={{ color: theme.primaryLight }} />
+            </button>
           </div>
         </div>
       </motion.nav>
 
-      {/* HERO — Fullscreen */}
+      {/* QR Code Modal */}
+      {showQR && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowQR(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="rounded-3xl p-8 text-center max-w-sm mx-4"
+            style={{ background: theme.primaryLight }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-2" style={{ color: theme.primaryDark }}>Compartilhe o site</h3>
+            <p className="text-sm mb-6" style={{ color: `${theme.primaryDark}99` }}>
+              Escaneie o QR Code para acessar o site do evento
+            </p>
+            <img src={qrUrl} alt="QR Code do evento" className="mx-auto rounded-2xl mb-4" width={200} height={200} />
+            <p className="text-xs font-mono px-4 py-2 rounded-xl mb-4" style={{ background: `${theme.primaryDark}08`, color: theme.primaryDark }}>
+              {siteUrl}
+            </p>
+            <button
+              onClick={() => { navigator.clipboard.writeText(siteUrl); }}
+              className="px-6 py-2 rounded-full text-sm font-medium"
+              style={{ background: theme.primary, color: theme.primaryLight }}
+            >
+              Copiar link
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* HERO */}
       {event.enabledSections.hero && (
         <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
           <motion.div
@@ -115,55 +170,30 @@ const EventSite = () => {
           />
           <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${theme.primaryDark}99, ${theme.primaryDark}DD)` }} />
           <motion.div className="relative z-10 text-center space-y-6 px-6" style={{ opacity: heroOpacity }}>
-            {/* Decorative hearts */}
-            <motion.div
-              initial={{ scale: 0, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
+            <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ duration: 0.8, delay: 0.3 }}>
               <svg className="w-14 h-14 mx-auto" viewBox="0 0 56 56" fill="none">
                 <path d="M28 48s-18-12-18-24a10 10 0 0 1 18-6 10 10 0 0 1 18 6c0 12-18 24-18 24z" fill={theme.primary} opacity="0.3" />
                 <path d="M28 44s-14-10-14-20a8 8 0 0 1 14-5 8 8 0 0 1 14 5c0 10-14 20-14 20z" fill={theme.primary} opacity="0.7" />
               </svg>
             </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-xs uppercase tracking-[0.3em] font-medium"
-              style={{ color: `${theme.primary}CC` }}
-            >
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+              className="text-xs uppercase tracking-[0.3em] font-medium" style={{ color: `${theme.primary}CC` }}>
               Convidam para o {event.type}
             </motion.p>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="text-5xl md:text-7xl font-bold leading-tight"
-              style={{ color: theme.primaryLight }}
-            >
+            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+              className="text-5xl md:text-7xl font-bold leading-tight" style={{ color: theme.primaryLight }}>
               {event.name}
             </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
-              className="text-lg italic"
-              style={{ color: `${theme.primaryLight}AA` }}
-            >
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+              className="text-lg italic" style={{ color: `${theme.primaryLight}BB` }}>
               "{event.welcomeMessage.slice(0, 60)}..."
             </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.1 }}
-              className="flex items-center justify-center gap-6 text-sm"
-              style={{ color: `${theme.primaryLight}BB` }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}
+              className="flex items-center justify-center gap-6 text-sm" style={{ color: `${theme.primaryLight}CC` }}>
               <span className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" style={{ color: theme.primary }} />
                 {format(event.date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
@@ -176,12 +206,8 @@ const EventSite = () => {
 
             {/* Countdown */}
             {event.enabledSections.countdown && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.3 }}
-                className="flex justify-center gap-4 pt-4"
-              >
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.3 }}
+                className="flex justify-center gap-4 pt-4">
                 {[
                   { value: days, label: "Dias" },
                   { value: hours, label: "Horas" },
@@ -189,10 +215,8 @@ const EventSite = () => {
                   { value: seconds, label: "Seg" },
                 ].map((item) => (
                   <div key={item.label} className="text-center">
-                    <div
-                      className="text-3xl font-bold rounded-xl w-18 h-18 flex items-center justify-center px-4 py-3"
-                      style={{ background: `${theme.primary}20`, color: theme.primaryLight }}
-                    >
+                    <div className="text-3xl font-bold rounded-xl w-18 h-18 flex items-center justify-center px-4 py-3"
+                      style={{ background: `${theme.primary}20`, color: theme.primaryLight }}>
                       {String(item.value).padStart(2, "0")}
                     </div>
                     <span className="text-xs mt-1 block" style={{ color: `${theme.primaryLight}88` }}>{item.label}</span>
@@ -201,33 +225,19 @@ const EventSite = () => {
               </motion.div>
             )}
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
               <a href="#rsvp">
-                <button
-                  className="mt-4 px-8 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ background: theme.primary, color: theme.primaryDark }}
-                >
+                <button className="mt-4 px-8 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ background: theme.primary, color: theme.primaryDark }}>
                   Confirmar Presença
                 </button>
               </a>
             </motion.div>
           </motion.div>
 
-          {/* Scroll indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2 }}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          >
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2">
+            <motion.div animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
               <ChevronDown className="w-6 h-6" style={{ color: `${theme.primaryLight}66` }} />
             </motion.div>
           </motion.div>
@@ -240,11 +250,7 @@ const EventSite = () => {
           <div className="max-w-3xl mx-auto text-center">
             <ScrollSection>
               <p className="text-xs uppercase tracking-[0.25em] mb-4 font-semibold" style={{ color: theme.primary }}>Nossa História</p>
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
-                <Heart className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
-              </div>
+              <SectionDivider color={theme.primary} />
               <p className="text-base leading-loose" style={{ color: theme.primaryDark }}>
                 {event.story}
               </p>
@@ -258,12 +264,8 @@ const EventSite = () => {
         <section id="galeria" className="py-24 px-6" style={{ background: theme.primaryDark }}>
           <div className="max-w-5xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4" style={{ color: theme.primary }}>Galeria</p>
-              <div className="flex items-center justify-center gap-4 mb-12">
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
-                <Heart className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
-              </div>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Galeria</p>
+              <SectionDivider color={theme.primary} />
             </ScrollSection>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
@@ -276,12 +278,7 @@ const EventSite = () => {
               ].map((url, i) => (
                 <ScrollSection key={i} delay={i * 0.1}>
                   <div className="aspect-square rounded-xl overflow-hidden cursor-pointer group">
-                    <img
-                      src={url}
-                      alt={`Foto ${i + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      loading="lazy"
-                    />
+                    <img src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
                   </div>
                 </ScrollSection>
               ))}
@@ -296,11 +293,7 @@ const EventSite = () => {
           <div className="max-w-4xl mx-auto">
             <ScrollSection>
               <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Informações</p>
-              <div className="flex items-center justify-center gap-4 mb-12">
-                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
-                <Heart className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
-              </div>
+              <SectionDivider color={theme.primary} />
             </ScrollSection>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
@@ -310,10 +303,7 @@ const EventSite = () => {
                 { icon: Clock, title: "Horário", info: "Cerimônia às 16h\nRecepção às 18h" },
               ].map((card, i) => (
                 <ScrollSection key={i} delay={i * 0.1}>
-                  <div
-                    className="text-center p-6 rounded-2xl"
-                    style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}15` }}
-                  >
+                  <div className="text-center p-6 rounded-2xl" style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}20` }}>
                     <card.icon className="w-6 h-6 mx-auto mb-3" style={{ color: theme.primary }} />
                     <h4 className="text-sm font-semibold mb-2" style={{ color: theme.primaryDark }}>{card.title}</h4>
                     <p className="text-xs whitespace-pre-line" style={{ color: `${theme.primaryDark}BB` }}>{card.info}</p>
@@ -322,14 +312,13 @@ const EventSite = () => {
               ))}
             </div>
 
-            {/* Map placeholder */}
             {event.enabledSections.location && (
               <ScrollSection delay={0.3}>
                 <div className="mt-8 rounded-2xl overflow-hidden h-64 flex items-center justify-center"
-                  style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}15` }}>
+                  style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}20` }}>
                   <div className="text-center">
-                    <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: `${theme.primary}60` }} />
-                    <p className="text-sm" style={{ color: `${theme.primaryDark}99` }}>{event.location}</p>
+                    <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: `${theme.primary}80` }} />
+                    <p className="text-sm" style={{ color: theme.primaryDark }}>{event.location}</p>
                   </div>
                 </div>
               </ScrollSection>
@@ -338,18 +327,43 @@ const EventSite = () => {
         </section>
       )}
 
+      {/* PLAYLIST */}
+      {event.enabledSections.playlist && (
+        <section className="py-24 px-6" style={{ background: theme.primaryDark }}>
+          <div className="max-w-3xl mx-auto">
+            <ScrollSection>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Nossa Playlist</p>
+              <SectionDivider color={theme.primary} />
+              <p className="text-center text-sm mb-8" style={{ color: `${theme.primaryLight}BB` }}>
+                As músicas que marcam nossa história e que vão embalar nossa festa 🎶
+              </p>
+            </ScrollSection>
+            <ScrollSection delay={0.2}>
+              <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${theme.primary}20` }}>
+                <iframe
+                  src={event.spotifyPlaylistUrl}
+                  width="100%"
+                  height="380"
+                  frameBorder="0"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  className="rounded-2xl"
+                  style={{ background: theme.primaryDark }}
+                />
+              </div>
+            </ScrollSection>
+          </div>
+        </section>
+      )}
+
       {/* RSVP */}
       {event.enabledSections.rsvp && (
-        <section id="rsvp" className="py-24 px-6" style={{ background: theme.primaryDark }}>
+        <section id="rsvp" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-lg mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4" style={{ color: theme.primary }}>Confirmar Presença</p>
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
-                <Heart className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
-              </div>
-              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: theme.primaryLight }}>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Confirmar Presença</p>
+              <SectionDivider color={theme.primary} />
+              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: theme.primaryDark }}>
                 Será uma honra ter você conosco
               </h2>
             </ScrollSection>
@@ -360,35 +374,30 @@ const EventSite = () => {
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                  className="text-center p-8 rounded-2xl"
-                  style={{ background: `${theme.primary}15` }}
+                  className="text-center p-8 rounded-2xl" style={{ background: `${theme.primary}15` }}
                 >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring" }}
-                  >
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }}>
                     <Heart className="w-12 h-12 mx-auto mb-4" style={{ color: theme.primary }} />
                   </motion.div>
-                  <h3 className="text-xl font-bold mb-2" style={{ color: theme.primaryLight }}>Obrigado!</h3>
-                  <p className="text-sm" style={{ color: `${theme.primaryLight}BB` }}>Sua confirmação foi recebida com sucesso.</p>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: theme.primaryDark }}>Obrigado!</h3>
+                  <p className="text-sm" style={{ color: `${theme.primaryDark}BB` }}>Sua confirmação foi recebida com sucesso.</p>
                 </motion.div>
               </ScrollSection>
             ) : (
               <ScrollSection delay={0.2}>
-                <div className="space-y-4 p-6 rounded-2xl" style={{ background: `${theme.primaryLight}10`, border: `1px solid ${theme.primary}20` }}>
+                <div className="space-y-4 p-6 rounded-2xl" style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}20` }}>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: `${theme.primaryLight}CC` }}>Nome completo</Label>
-                    <Input placeholder="Seu nome" className="h-11 border-white/10 bg-white/5 text-white placeholder:text-white/30" />
+                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Nome completo</Label>
+                    <Input placeholder="Seu nome" className="h-11" style={{ borderColor: `${theme.primary}30`, background: `${theme.primaryLight}` }} />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: `${theme.primaryLight}CC` }}>Email</Label>
-                    <Input type="email" placeholder="seu@email.com" className="h-11 border-white/10 bg-white/5 text-white placeholder:text-white/30" />
+                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Email</Label>
+                    <Input type="email" placeholder="seu@email.com" className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: `${theme.primaryLight}CC` }}>Confirmação</Label>
+                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Confirmação</Label>
                     <Select defaultValue="sim">
-                      <SelectTrigger className="h-11 border-white/10 bg-white/5 text-white">
+                      <SelectTrigger className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -400,22 +409,22 @@ const EventSite = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label className="text-sm" style={{ color: `${theme.primaryLight}CC` }}>Nº acompanhantes</Label>
-                      <Input type="number" defaultValue="0" min="0" max="5" className="h-11 border-white/10 bg-white/5 text-white" />
+                      <Label className="text-sm" style={{ color: theme.primaryDark }}>Nº acompanhantes</Label>
+                      <Input type="number" defaultValue="0" min="0" max="5" className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-sm" style={{ color: `${theme.primaryLight}CC` }}>Restrição alimentar</Label>
-                      <Input placeholder="Ex: Vegetariano" className="h-11 border-white/10 bg-white/5 text-white placeholder:text-white/30" />
+                      <Label className="text-sm" style={{ color: theme.primaryDark }}>Restrição alimentar</Label>
+                      <Input placeholder="Ex: Vegetariano" className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: `${theme.primaryLight}CC` }}>Mensagem (opcional)</Label>
-                    <Textarea placeholder="Deixe uma mensagem para os noivos..." rows={3} className="border-white/10 bg-white/5 text-white placeholder:text-white/30" />
+                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Mensagem (opcional)</Label>
+                    <Textarea placeholder="Deixe uma mensagem para os noivos..." rows={3} style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                   </div>
                   <button
                     onClick={() => setRsvpSent(true)}
                     className="w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    style={{ background: theme.primary, color: theme.primaryDark }}
+                    style={{ background: theme.primary, color: theme.primaryLight }}
                   >
                     <Send className="w-4 h-4" /> Confirmar Presença
                   </button>
@@ -428,36 +437,95 @@ const EventSite = () => {
 
       {/* GIFTS */}
       {event.enabledSections.gifts && availableGifts.length > 0 && (
-        <section className="py-24 px-6" style={{ background: theme.primaryLight }}>
+        <section className="py-24 px-6" style={{ background: theme.primaryDark }}>
           <div className="max-w-5xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4" style={{ color: theme.primary }}>Lista de Presentes</p>
-              <div className="flex items-center justify-center gap-4 mb-12">
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
-                <Gift className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
-              </div>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Lista de Presentes</p>
+              <SectionDivider color={theme.primary} />
             </ScrollSection>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {availableGifts.map((gift, i) => (
                 <ScrollSection key={gift.id} delay={i * 0.08}>
-                  <div
-                    className="p-6 rounded-2xl text-center group cursor-pointer transition-all duration-300 hover:-translate-y-1"
-                    style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}15` }}
-                  >
-                    <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: `${theme.primary}15` }}>
+                  <div className="p-6 rounded-2xl text-center group cursor-pointer transition-all duration-300 hover:-translate-y-1"
+                    style={{ background: `${theme.primaryLight}10`, border: `1px solid ${theme.primary}20` }}>
+                    <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: `${theme.primary}20` }}>
                       <Gift className="w-7 h-7" style={{ color: theme.primary }} />
                     </div>
-                    <h4 className="font-semibold text-sm mb-1" style={{ color: theme.primaryDark }}>{gift.name}</h4>
-                    <p className="text-xs mb-3" style={{ color: `${theme.primaryDark}BB` }}>{gift.description}</p>
+                    <h4 className="font-semibold text-sm mb-1" style={{ color: theme.primaryLight }}>{gift.name}</h4>
+                    <p className="text-xs mb-3" style={{ color: `${theme.primaryLight}BB` }}>{gift.description}</p>
                     <p className="text-xl font-bold mb-4" style={{ color: theme.primary }}>R$ {gift.value}</p>
-                    <button
-                      className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"
-                      style={{ background: theme.primary, color: theme.primaryDark }}
-                    >
+                    <button className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"
+                      style={{ background: theme.primary, color: theme.primaryDark }}>
                       Presentear
                     </button>
                   </div>
+                </ScrollSection>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* MURAL DE RECADOS */}
+      {event.enabledSections.wall && (
+        <section id="recados" className="py-24 px-6" style={{ background: theme.primaryLight }}>
+          <div className="max-w-3xl mx-auto">
+            <ScrollSection>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Mural de Recados</p>
+              <SectionDivider color={theme.primary} />
+              <p className="text-center text-sm mb-8" style={{ color: `${theme.primaryDark}BB` }}>
+                Deixe uma mensagem carinhosa para os noivos 💌
+              </p>
+            </ScrollSection>
+
+            {/* Message Form */}
+            <ScrollSection delay={0.1}>
+              <div className="p-6 rounded-2xl mb-8" style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}20` }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                  <Input
+                    placeholder="Seu nome"
+                    value={wallName}
+                    onChange={(e) => setWallName(e.target.value)}
+                    className="h-11"
+                    style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }}
+                  />
+                  <div />
+                </div>
+                <Textarea
+                  placeholder="Escreva sua mensagem..."
+                  value={wallMsg}
+                  onChange={(e) => setWallMsg(e.target.value)}
+                  rows={3}
+                  className="mb-3"
+                  style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }}
+                />
+                <button
+                  onClick={handleWallSubmit}
+                  disabled={!wallName.trim() || !wallMsg.trim()}
+                  className="px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none"
+                  style={{ background: theme.primary, color: theme.primaryLight }}
+                >
+                  <MessageCircle className="w-4 h-4" /> Enviar Recado
+                </button>
+              </div>
+            </ScrollSection>
+
+            {/* Messages Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {wallMessages.map((msg, i) => (
+                <ScrollSection key={msg.id} delay={i * 0.08}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-5 rounded-2xl"
+                    style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}15` }}
+                  >
+                    <p className="text-sm leading-relaxed mb-3" style={{ color: theme.primaryDark }}>"{msg.message}"</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold" style={{ color: theme.primary }}>— {msg.name}</span>
+                      <span className="text-xs" style={{ color: `${theme.primaryDark}66` }}>{msg.date}</span>
+                    </div>
+                  </motion.div>
                 </ScrollSection>
               ))}
             </div>
@@ -483,12 +551,20 @@ const EventSite = () => {
       {/* FOOTER */}
       {event.enabledSections.footer && (
         <footer className="py-8 px-6 text-center" style={{ background: theme.primaryDark, borderTop: `1px solid ${theme.primary}15` }}>
+          <div className="max-w-md mx-auto mb-4">
+            <button
+              onClick={() => setShowQR(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs transition-all hover:opacity-80"
+              style={{ background: `${theme.primary}15`, color: theme.primary }}
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              Compartilhar QR Code
+            </button>
+          </div>
           <p className="text-sm mb-2" style={{ color: theme.primary }}>{event.name}</p>
           <p className="text-xs" style={{ color: `${theme.primaryLight}44` }}>
             Site criado no{" "}
-            <Link to="/" className="hover:underline" style={{ color: `${theme.primaryLight}66` }}>
-              EventoSite
-            </Link>
+            <Link to="/" className="hover:underline" style={{ color: `${theme.primaryLight}66` }}>EventoSite</Link>
           </p>
         </footer>
       )}
