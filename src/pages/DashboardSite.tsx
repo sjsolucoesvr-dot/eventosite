@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   CalendarIcon, Monitor, Smartphone, Upload, Check, Image, Heart,
-  Clock, BookOpen, Camera, MapPin, MessageSquare, Gift, Users, Layout,
+  Clock, BookOpen, Camera, MapPin, MessageSquare, Gift, Users, Layout, Music, MessageCircle, QrCode,
 } from "lucide-react";
 
 const themes = [
@@ -36,14 +36,23 @@ const fonts = [
   { id: "glacial", name: "Glacial Indifference", family: "'Glacial Indifference', sans-serif" },
 ];
 
+const bodyFonts = [
+  { id: "dm-sans", name: "DM Sans", family: "'DM Sans', sans-serif" },
+  { id: "glacial", name: "Glacial Indifference", family: "'Glacial Indifference', sans-serif" },
+  { id: "raleway", name: "Raleway", family: "'Raleway', sans-serif" },
+  { id: "cormorant", name: "Cormorant Garamond", family: "'Cormorant Garamond', serif" },
+];
+
 const sections = [
   { id: "hero", label: "Hero / Capa", icon: Layout },
   { id: "countdown", label: "Contagem Regressiva", icon: Clock },
   { id: "story", label: "Nossa História", icon: BookOpen },
   { id: "gallery", label: "Galeria de Fotos", icon: Camera },
   { id: "info", label: "Informações do Evento", icon: CalendarIcon },
+  { id: "playlist", label: "Playlist (Spotify)", icon: Music },
   { id: "rsvp", label: "Confirmação de Presença (RSVP)", icon: Users },
   { id: "gifts", label: "Lista de Presentes", icon: Gift },
+  { id: "wall", label: "Mural de Recados", icon: MessageCircle },
   { id: "location", label: "Localização / Mapa", icon: MapPin },
   { id: "message", label: "Mensagem dos Anfitriões", icon: MessageSquare },
   { id: "footer", label: "Rodapé", icon: Layout },
@@ -54,6 +63,7 @@ const DashboardSite = () => {
   const [rsvpDate, setRsvpDate] = useState<Date>();
   const [selectedTheme, setSelectedTheme] = useState("rosa");
   const [selectedFont, setSelectedFont] = useState("playfair");
+  const [selectedBodyFont, setSelectedBodyFont] = useState("dm-sans");
   const [primaryColor, setPrimaryColor] = useState("#E8547A");
   const [secondaryColor, setSecondaryColor] = useState("#C9A96E");
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
@@ -62,11 +72,21 @@ const DashboardSite = () => {
   );
   const [eventName, setEventName] = useState("Ana & Pedro");
   const [welcomeMessage, setWelcomeMessage] = useState("Estamos muito felizes em compartilhar este momento com vocês!");
+  const [spotifyUrl, setSpotifyUrl] = useState("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M");
+  const [sectionColorEditing, setSectionColorEditing] = useState<string | null>(null);
+  const [sectionColors, setSectionColors] = useState<Record<string, { bg: string; text: string; accent: string }>>({});
 
   const currentTheme = themes.find((t) => t.id === selectedTheme)!;
 
   const toggleSection = (id: string) =>
     setEnabledSections((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const updateSectionColor = (sectionId: string, field: "bg" | "text" | "accent", value: string) => {
+    setSectionColors((prev) => ({
+      ...prev,
+      [sectionId]: { ...(prev[sectionId] || { bg: "", text: "", accent: "" }), [field]: value },
+    }));
+  };
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
@@ -138,6 +158,11 @@ const DashboardSite = () => {
                 </PopoverContent>
               </Popover>
             </div>
+            <div className="space-y-2">
+              <Label className="font-body text-sm">Link da Playlist (Spotify Embed)</Label>
+              <Input value={spotifyUrl} onChange={(e) => setSpotifyUrl(e.target.value)} placeholder="https://open.spotify.com/embed/playlist/..." />
+              <p className="text-xs text-muted-foreground">Cole a URL embed de uma playlist do Spotify</p>
+            </div>
           </TabsContent>
 
           <TabsContent value="aparencia" className="space-y-6">
@@ -192,7 +217,7 @@ const DashboardSite = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-body text-sm">Fonte do título</Label>
+              <Label className="font-body text-sm">Fonte dos títulos</Label>
               <div className="grid grid-cols-2 gap-2">
                 {fonts.map((f) => (
                   <button
@@ -204,6 +229,24 @@ const DashboardSite = () => {
                     )}
                   >
                     <span style={{ fontFamily: f.family }} className="text-lg text-foreground">{f.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="font-body text-sm">Fonte do corpo de texto</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {bodyFonts.map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setSelectedBodyFont(f.id)}
+                    className={cn(
+                      "rounded-xl border p-3 text-center transition-all",
+                      selectedBodyFont === f.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
+                    )}
+                  >
+                    <span style={{ fontFamily: f.family }} className="text-sm text-foreground">{f.name}</span>
                   </button>
                 ))}
               </div>
@@ -229,14 +272,89 @@ const DashboardSite = () => {
           </TabsContent>
 
           <TabsContent value="secoes" className="space-y-3">
-            <p className="text-sm text-muted-foreground mb-4">Ative ou desative seções do seu site</p>
+            <p className="text-sm text-muted-foreground mb-4">Ative ou desative seções do seu site. Clique no ícone de paleta para customizar cores por seção.</p>
             {sections.map((section) => (
-              <div key={section.id} className="flex items-center justify-between rounded-xl border border-border p-4 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <section.icon className="w-4 h-4 text-secondary" />
-                  <span className="font-body text-sm text-foreground">{section.label}</span>
+              <div key={section.id}>
+                <div className="flex items-center justify-between rounded-xl border border-border p-4 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <section.icon className="w-4 h-4 text-secondary" />
+                    <span className="font-body text-sm text-foreground">{section.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSectionColorEditing(sectionColorEditing === section.id ? null : section.id)}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-colors text-muted-foreground hover:text-primary",
+                        sectionColorEditing === section.id && "text-primary bg-primary/10"
+                      )}
+                      title="Cores desta seção"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="4" />
+                      </svg>
+                    </button>
+                    <Switch checked={enabledSections[section.id]} onCheckedChange={() => toggleSection(section.id)} />
+                  </div>
                 </div>
-                <Switch checked={enabledSections[section.id]} onCheckedChange={() => toggleSection(section.id)} />
+                {sectionColorEditing === section.id && (
+                  <div className="ml-7 mt-2 mb-3 p-4 rounded-xl border border-border bg-muted/20 space-y-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Cores personalizadas para "{section.label}"</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Fundo</Label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="color"
+                            value={sectionColors[section.id]?.bg || currentTheme.bg}
+                            onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)}
+                            className="w-8 h-8 rounded border border-border cursor-pointer"
+                          />
+                          <Input
+                            value={sectionColors[section.id]?.bg || ""}
+                            onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)}
+                            placeholder="Auto"
+                            className="flex-1 font-mono text-xs h-8"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Texto</Label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="color"
+                            value={sectionColors[section.id]?.text || "#333333"}
+                            onChange={(e) => updateSectionColor(section.id, "text", e.target.value)}
+                            className="w-8 h-8 rounded border border-border cursor-pointer"
+                          />
+                          <Input
+                            value={sectionColors[section.id]?.text || ""}
+                            onChange={(e) => updateSectionColor(section.id, "text", e.target.value)}
+                            placeholder="Auto"
+                            className="flex-1 font-mono text-xs h-8"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Destaque</Label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="color"
+                            value={sectionColors[section.id]?.accent || primaryColor}
+                            onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)}
+                            className="w-8 h-8 rounded border border-border cursor-pointer"
+                          />
+                          <Input
+                            value={sectionColors[section.id]?.accent || ""}
+                            onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)}
+                            placeholder="Auto"
+                            className="flex-1 font-mono text-xs h-8"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </TabsContent>
@@ -263,62 +381,153 @@ const DashboardSite = () => {
           </div>
         </div>
         <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
-          <div
-            className={cn(
-              "bg-card rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-500",
-              previewMode === "desktop" ? "w-full max-w-3xl" : "w-[375px]"
-            )}
-            style={{ backgroundColor: currentTheme.bg }}
-          >
-            {/* Mini Preview */}
-            <div className="relative h-64 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primaryColor}22, ${secondaryColor}22)` }}>
-              <Heart className="absolute top-4 left-1/2 -translate-x-1/2 w-6 h-6" style={{ color: primaryColor }} />
-              <div className="text-center mt-6">
-                <h2 className="text-3xl font-display font-semibold tracking-tight" style={{ color: currentTheme.primary, fontFamily: fonts.find(f => f.id === selectedFont)?.family }}>
-                  {eventName}
-                </h2>
-                <p className="text-sm mt-2" style={{ color: "#6B7280" }}>
-                  {eventDate ? format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "20 de Dezembro de 2025"}
-                </p>
-              </div>
-            </div>
-
-            {enabledSections.countdown && (
-              <div className="py-8 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
-                <p className="text-xs uppercase tracking-widest mb-3" style={{ color: primaryColor }}>Faltam</p>
-                <div className="flex justify-center gap-6">
-                  {[{ n: 180, l: "Dias" }, { n: 12, l: "Horas" }, { n: 45, l: "Min" }].map((item) => (
-                    <div key={item.l} className="text-center">
-                      <span className="text-2xl font-display font-semibold text-foreground">{item.n}</span>
-                      <span className="block text-xs text-muted-foreground">{item.l}</span>
-                    </div>
-                  ))}
+          {/* Phone frame for mobile */}
+          {previewMode === "mobile" ? (
+            <div className="relative">
+              {/* Phone bezel */}
+              <div className="relative w-[390px] rounded-[3rem] border-[12px] border-foreground/90 bg-foreground/90 shadow-2xl overflow-hidden">
+                {/* Notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-foreground/90 rounded-b-2xl z-10" />
+                {/* Screen */}
+                <div className="rounded-[2.2rem] overflow-hidden bg-card" style={{ backgroundColor: currentTheme.bg }}>
+                  <div className="pt-7">
+                    <PreviewContent
+                      currentTheme={currentTheme}
+                      primaryColor={primaryColor}
+                      secondaryColor={secondaryColor}
+                      selectedFont={selectedFont}
+                      selectedBodyFont={selectedBodyFont}
+                      eventName={eventName}
+                      eventDate={eventDate}
+                      welcomeMessage={welcomeMessage}
+                      enabledSections={enabledSections}
+                    />
+                  </div>
                 </div>
               </div>
-            )}
-
-            {enabledSections.message && (
-              <div className="px-8 py-8 text-center">
-                <p className="text-sm text-muted-foreground leading-relaxed italic">"{welcomeMessage}"</p>
-              </div>
-            )}
-
-            {enabledSections.rsvp && (
-              <div className="px-8 py-6 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
-                <button className="rounded-full px-6 py-2.5 text-sm font-body font-medium text-white" style={{ backgroundColor: primaryColor }}>
-                  Confirmar Presença
-                </button>
-              </div>
-            )}
-
-            {enabledSections.footer && (
-              <div className="px-8 py-4 text-center border-t" style={{ borderColor: `${primaryColor}10` }}>
-                <p className="text-xs text-muted-foreground">Feito com ❤️ no EventoSite</p>
-              </div>
-            )}
-          </div>
+              {/* Home bar */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/40 rounded-full" />
+            </div>
+          ) : (
+            <div
+              className="w-full max-w-3xl bg-card rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden"
+              style={{ backgroundColor: currentTheme.bg }}
+            >
+              <PreviewContent
+                currentTheme={currentTheme}
+                primaryColor={primaryColor}
+                secondaryColor={secondaryColor}
+                selectedFont={selectedFont}
+                selectedBodyFont={selectedBodyFont}
+                eventName={eventName}
+                eventDate={eventDate}
+                welcomeMessage={welcomeMessage}
+                enabledSections={enabledSections}
+              />
+            </div>
+          )}
         </div>
       </div>
+    </div>
+  );
+};
+
+interface PreviewContentProps {
+  currentTheme: typeof themes[0];
+  primaryColor: string;
+  secondaryColor: string;
+  selectedFont: string;
+  selectedBodyFont: string;
+  eventName: string;
+  eventDate: Date | undefined;
+  welcomeMessage: string;
+  enabledSections: Record<string, boolean>;
+}
+
+const PreviewContent = ({
+  currentTheme,
+  primaryColor,
+  secondaryColor,
+  selectedFont,
+  selectedBodyFont,
+  eventName,
+  eventDate,
+  welcomeMessage,
+  enabledSections,
+}: PreviewContentProps) => {
+  const bodyFamily = bodyFonts.find((f) => f.id === selectedBodyFont)?.family || "'DM Sans', sans-serif";
+
+  return (
+    <div style={{ fontFamily: bodyFamily }}>
+      {/* Hero Preview */}
+      <div className="relative h-64 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primaryColor}22, ${secondaryColor}22)` }}>
+        <Heart className="absolute top-4 left-1/2 -translate-x-1/2 w-6 h-6" style={{ color: primaryColor }} />
+        <div className="text-center mt-6">
+          <h2
+            className="text-3xl font-semibold tracking-tight"
+            style={{ color: currentTheme.primary, fontFamily: fonts.find((f) => f.id === selectedFont)?.family }}
+          >
+            {eventName}
+          </h2>
+          <p className="text-sm mt-2" style={{ color: "#6B7280", fontFamily: bodyFamily }}>
+            {eventDate ? format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "20 de Dezembro de 2025"}
+          </p>
+        </div>
+      </div>
+
+      {enabledSections.countdown && (
+        <div className="py-8 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
+          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: primaryColor }}>Faltam</p>
+          <div className="flex justify-center gap-6">
+            {[{ n: 180, l: "Dias" }, { n: 12, l: "Horas" }, { n: 45, l: "Min" }].map((item) => (
+              <div key={item.l} className="text-center">
+                <span className="text-2xl font-semibold text-foreground">{item.n}</span>
+                <span className="block text-xs text-muted-foreground">{item.l}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {enabledSections.message && (
+        <div className="px-8 py-8 text-center">
+          <p className="text-sm text-muted-foreground leading-relaxed italic" style={{ fontFamily: bodyFamily }}>"{welcomeMessage}"</p>
+        </div>
+      )}
+
+      {enabledSections.playlist && (
+        <div className="px-8 py-4 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
+          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: primaryColor }}>
+            <Music className="w-3.5 h-3.5" /> Nossa Playlist
+          </div>
+        </div>
+      )}
+
+      {enabledSections.wall && (
+        <div className="px-8 py-4 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
+          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: primaryColor }}>
+            <MessageCircle className="w-3.5 h-3.5" /> Mural de Recados
+          </div>
+        </div>
+      )}
+
+      {enabledSections.rsvp && (
+        <div className="px-8 py-6 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
+          <button className="rounded-full px-6 py-2.5 text-sm font-medium text-white" style={{ backgroundColor: primaryColor }}>
+            Confirmar Presença
+          </button>
+        </div>
+      )}
+
+      {enabledSections.footer && (
+        <div className="px-8 py-4 text-center border-t" style={{ borderColor: `${primaryColor}10` }}>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <QrCode className="w-3 h-3" style={{ color: `${primaryColor}60` }} />
+            <span className="text-xs" style={{ color: `${primaryColor}60` }}>QR Code</span>
+          </div>
+          <p className="text-xs text-muted-foreground">Feito com ❤️ no EventoSite</p>
+        </div>
+      )}
     </div>
   );
 };
