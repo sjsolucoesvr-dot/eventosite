@@ -316,7 +316,7 @@ const EventSite = () => {
                   >
                     <card.icon className="w-6 h-6 mx-auto mb-3" style={{ color: theme.primary }} />
                     <h4 className="text-sm font-semibold mb-2" style={{ color: theme.primaryDark }}>{card.title}</h4>
-                    <p className="text-xs whitespace-pre-line" style={{ color: `${theme.primaryDark}99` }}>{card.info}</p>
+                    <p className="text-xs whitespace-pre-line" style={{ color: `${theme.primaryDark}BB` }}>{card.info}</p>
                   </div>
                 </ScrollSection>
               ))}
