@@ -295,11 +295,11 @@ const EventSite = () => {
         <section id="informacoes" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-4xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4" style={{ color: theme.primary }}>Informações</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Informações</p>
               <div className="flex items-center justify-center gap-4 mb-12">
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
+                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
                 <Heart className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
+                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
               </div>
             </ScrollSection>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
