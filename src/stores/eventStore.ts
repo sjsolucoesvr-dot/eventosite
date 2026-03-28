@@ -64,6 +64,13 @@ export interface EventTheme {
   primaryLight: string;
 }
 
+export interface WallMessage {
+  id: number;
+  name: string;
+  message: string;
+  date: string;
+}
+
 export interface EventConfig {
   name: string;
   slug: string;
@@ -77,8 +84,11 @@ export interface EventConfig {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;
+  bodyFontFamily: string;
   enabledSections: Record<string, boolean>;
   pixKey: string;
+  spotifyPlaylistUrl: string;
+  sectionColors: Record<string, { bg: string; text: string; accent: string }>;
 }
 
 export interface EventStore {
