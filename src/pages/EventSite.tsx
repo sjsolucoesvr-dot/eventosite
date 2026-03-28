@@ -449,7 +449,7 @@ const EventSite = () => {
                       <Gift className="w-7 h-7" style={{ color: theme.primary }} />
                     </div>
                     <h4 className="font-semibold text-sm mb-1" style={{ color: theme.primaryDark }}>{gift.name}</h4>
-                    <p className="text-xs mb-3" style={{ color: `${theme.primaryDark}88` }}>{gift.description}</p>
+                    <p className="text-xs mb-3" style={{ color: `${theme.primaryDark}BB` }}>{gift.description}</p>
                     <p className="text-xl font-bold mb-4" style={{ color: theme.primary }}>R$ {gift.value}</p>
                     <button
                       className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"

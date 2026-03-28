@@ -31,6 +31,8 @@ const fonts = [
   { id: "great-vibes", name: "Great Vibes", family: "'Great Vibes', cursive" },
   { id: "dancing", name: "Dancing Script", family: "'Dancing Script', cursive" },
   { id: "raleway", name: "Raleway", family: "'Raleway', sans-serif" },
+  { id: "boston-angel", name: "Boston Angel", family: "'Boston Angel', serif" },
+  { id: "glacial", name: "Glacial Indifference", family: "'Glacial Indifference', sans-serif" },
 ];
 
 const sections = [
