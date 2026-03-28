@@ -280,4 +280,11 @@ export const useEventStore = create<EventStore>((set) => ({
         },
       },
     })),
+  addWallMessage: (name, message) =>
+    set((state) => ({
+      wallMessages: [
+        { id: Date.now(), name, message, date: new Date().toLocaleDateString("pt-BR") },
+        ...state.wallMessages,
+      ],
+    })),
 }));
