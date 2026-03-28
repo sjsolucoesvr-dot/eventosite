@@ -239,13 +239,13 @@ const EventSite = () => {
         <section id="historia" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-3xl mx-auto text-center">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] mb-4" style={{ color: theme.primary }}>Nossa História</p>
+              <p className="text-xs uppercase tracking-[0.25em] mb-4 font-semibold" style={{ color: theme.primary }}>Nossa História</p>
               <div className="flex items-center justify-center gap-4 mb-8">
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
+                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
                 <Heart className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
+                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
               </div>
-              <p className="text-base leading-loose" style={{ color: `${theme.primaryDark}CC` }}>
+              <p className="text-base leading-loose" style={{ color: theme.primaryDark }}>
                 {event.story}
               </p>
             </ScrollSection>
@@ -295,11 +295,11 @@ const EventSite = () => {
         <section id="informacoes" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-4xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4" style={{ color: theme.primary }}>Informações</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Informações</p>
               <div className="flex items-center justify-center gap-4 mb-12">
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
+                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
                 <Heart className="w-5 h-5" style={{ color: theme.primary }} />
-                <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
+                <div className="h-px w-12" style={{ background: `${theme.primary}60` }} />
               </div>
             </ScrollSection>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -316,7 +316,7 @@ const EventSite = () => {
                   >
                     <card.icon className="w-6 h-6 mx-auto mb-3" style={{ color: theme.primary }} />
                     <h4 className="text-sm font-semibold mb-2" style={{ color: theme.primaryDark }}>{card.title}</h4>
-                    <p className="text-xs whitespace-pre-line" style={{ color: `${theme.primaryDark}99` }}>{card.info}</p>
+                    <p className="text-xs whitespace-pre-line" style={{ color: `${theme.primaryDark}BB` }}>{card.info}</p>
                   </div>
                 </ScrollSection>
               ))}
@@ -438,7 +438,7 @@ const EventSite = () => {
                 <div className="h-px w-12" style={{ background: `${theme.primary}40` }} />
               </div>
             </ScrollSection>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {availableGifts.map((gift, i) => (
                 <ScrollSection key={gift.id} delay={i * 0.08}>
                   <div
@@ -449,7 +449,7 @@ const EventSite = () => {
                       <Gift className="w-7 h-7" style={{ color: theme.primary }} />
                     </div>
                     <h4 className="font-semibold text-sm mb-1" style={{ color: theme.primaryDark }}>{gift.name}</h4>
-                    <p className="text-xs mb-3" style={{ color: `${theme.primaryDark}88` }}>{gift.description}</p>
+                    <p className="text-xs mb-3" style={{ color: `${theme.primaryDark}BB` }}>{gift.description}</p>
                     <p className="text-xl font-bold mb-4" style={{ color: theme.primary }}>R$ {gift.value}</p>
                     <button
                       className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"

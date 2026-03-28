@@ -104,6 +104,7 @@ export const eventThemes: EventTheme[] = [
   { id: "verde", name: "Verde Jardim", primaryDark: "#0D2B0E", primary: "#3D8C40", primaryLight: "#EDFAED" },
   { id: "boho", name: "Boho Bege", primaryDark: "#3D2B0A", primary: "#8B6914", primaryLight: "#F5EEDC" },
   { id: "roxo", name: "Roxo Místico", primaryDark: "#2D1B4E", primary: "#A855F7", primaryLight: "#F3E8FF" },
+  { id: "lilas", name: "Lilás Elegante", primaryDark: "#72489b", primary: "#9b75c1", primaryLight: "#FFFFFF" },
 ];
 
 const defaultSections: Record<string, boolean> = {

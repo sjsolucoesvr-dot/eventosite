@@ -23,6 +23,7 @@ const themes = [
   { id: "verde", name: "Verde Jardim", primary: "#3D8C40", secondary: "#A8D5A2", bg: "#F2FAF2" },
   { id: "boho", name: "Boho Bege", primary: "#A0826D", secondary: "#D4C4B0", bg: "#FAF5EF" },
   { id: "roxo", name: "Roxo Místico", primary: "#6B3FA0", secondary: "#C8A2E8", bg: "#F8F2FF" },
+  { id: "lilas", name: "Lilás Elegante", primary: "#9b75c1", secondary: "#72489b", bg: "#FFFFFF" },
 ];
 
 const fonts = [
@@ -31,6 +32,8 @@ const fonts = [
   { id: "great-vibes", name: "Great Vibes", family: "'Great Vibes', cursive" },
   { id: "dancing", name: "Dancing Script", family: "'Dancing Script', cursive" },
   { id: "raleway", name: "Raleway", family: "'Raleway', sans-serif" },
+  { id: "boston-angel", name: "Boston Angel", family: "'Boston Angel', serif" },
+  { id: "glacial", name: "Glacial Indifference", family: "'Glacial Indifference', sans-serif" },
 ];
 
 const sections = [
