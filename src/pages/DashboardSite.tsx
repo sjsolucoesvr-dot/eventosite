@@ -58,7 +58,11 @@ const sections = [
   { id: "footer", label: "Rodapé", icon: Layout },
 ];
 
-const DashboardSite = () => {
+import type { EventRow } from "@/hooks/useEvent";
+
+interface Props { event?: EventRow | null; }
+
+const DashboardSite = ({ event: _event }: Props) => {
   const [eventDate, setEventDate] = useState<Date>();
   const [rsvpDate, setRsvpDate] = useState<Date>();
   const [selectedTheme, setSelectedTheme] = useState("rosa");
