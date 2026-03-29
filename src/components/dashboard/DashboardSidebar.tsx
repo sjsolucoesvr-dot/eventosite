@@ -1,11 +1,13 @@
 import {
-  Home, Globe, Users, Gift, DollarSign, ListChecks, Store, Settings, Heart,
+  Home, Globe, Users, Gift, DollarSign, ListChecks, Store, Settings, Heart, LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, useSidebar,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import type { EventRow } from "@/hooks/useEvent";
 
 const items = [
   { title: "Visão Geral", url: "/dashboard", icon: Home },
@@ -18,7 +20,13 @@ const items = [
   { title: "Configurações", url: "/dashboard/settings", icon: Settings },
 ];
 
-const DashboardSidebar = () => {
+interface Props {
+  event: EventRow | null | undefined;
+  profileName: string | null | undefined;
+  onSignOut: () => void;
+}
+
+const DashboardSidebar = ({ event, profileName, onSignOut }: Props) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
@@ -31,18 +39,25 @@ const DashboardSidebar = () => {
             <span className="text-lg font-display font-semibold text-sidebar-foreground">EventoSite</span>
           )}
         </div>
-        {!collapsed && (
+        {!collapsed && event && (
           <div className="mt-6 flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center font-body font-medium text-sm"
-              style={{ background: "rgba(232, 84, 122, 0.2)", color: "hsl(345, 75%, 62%)" }}
+              style={{ background: `${event.color_primary}33`, color: event.color_primary || "hsl(345, 75%, 62%)" }}
             >
-              A
+              {event.title?.charAt(0) || "E"}
             </div>
             <div>
-              <p className="text-sm font-body font-medium text-sidebar-foreground">Ana & Pedro</p>
-              <p className="text-xs font-body text-sidebar-foreground/50">20/12/2025</p>
+              <p className="text-sm font-body font-medium text-sidebar-foreground">{event.title}</p>
+              <p className="text-xs font-body text-sidebar-foreground/50">
+                {event.date ? new Date(event.date).toLocaleDateString("pt-BR") : "Sem data"}
+              </p>
             </div>
+          </div>
+        )}
+        {!collapsed && !event && (
+          <div className="mt-6">
+            <p className="text-sm font-body text-sidebar-foreground/50">{profileName || "Minha conta"}</p>
           </div>
         )}
       </SidebarHeader>
@@ -69,6 +84,12 @@ const DashboardSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="p-4">
+        <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground" onClick={onSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          {!collapsed && <span className="font-body">Sair</span>}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 };
