@@ -13,8 +13,20 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, signInWithGoogle, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleSignIn = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      toast.error("Erro ao entrar com Google");
+      return;
+    }
+    if (result.redirected) return;
+    navigate("/dashboard");
+  };
 
   if (user) {
     navigate("/dashboard", { replace: true });
