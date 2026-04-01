@@ -86,16 +86,27 @@ const Navbar = () => {
           className="md:hidden p-4 space-y-3"
           style={{ background: "rgba(250, 250, 248, 0.95)", backdropFilter: "blur(20px)" }}
         >
-          {links.map((l) => (
-            <a
-              key={l}
-              href={`#${l.toLowerCase()}`}
-              className="block text-sm py-2 text-muted-foreground"
-              onClick={() => setMobileOpen(false)}
-            >
-              {l}
-            </a>
-          ))}
+          {links.map((l) =>
+            l.href.startsWith("/") ? (
+              <Link
+                key={l.label}
+                to={l.href}
+                className="block text-sm py-2 text-muted-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                {l.label}
+              </Link>
+            ) : (
+              <a
+                key={l.label}
+                href={l.href}
+                className="block text-sm py-2 text-muted-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                {l.label}
+              </a>
+            )
+          )}
           <div className="flex gap-2 pt-2">
             <Button variant="outline" size="sm" className="flex-1 rounded-full" asChild>
               <Link to="/login">Entrar</Link>
