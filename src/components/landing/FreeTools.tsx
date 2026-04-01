@@ -10,7 +10,7 @@ const tools = [
 ];
 
 const FreeTools = () => (
-  <section className="py-28">
+  <section id="recursos" className="py-28">
     <div className="max-w-6xl mx-auto px-6">
       <ScrollReveal>
         <p className="text-xs font-body uppercase tracking-widest text-primary text-center mb-3">RECURSOS</p>
