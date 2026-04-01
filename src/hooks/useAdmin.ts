@@ -14,16 +14,17 @@ export const useAdmin = () => {
       return;
     }
 
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle()
-      .then(({ data }) => {
-        setIsAdmin(!!data);
-        setLoading(false);
-      });
+    const checkAdmin = async () => {
+      const { data } = await supabase
+        .from("user_roles" as any)
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      setIsAdmin(!!data);
+      setLoading(false);
+    };
+    checkAdmin();
   }, [user]);
 
   return { isAdmin, loading };
