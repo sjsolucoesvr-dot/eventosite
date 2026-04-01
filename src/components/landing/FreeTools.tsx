@@ -1,6 +1,7 @@
 import { BookOpen, Table, ListChecks, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
+import { toast } from "sonner";
 
 const tools = [
   { icon: BookOpen, title: "E-book: Descomplicando a jornada do casamento", desc: "Guia completo com dicas de especialistas." },
@@ -27,7 +28,11 @@ const FreeTools = () => (
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground">{t.title}</h3>
               <p className="text-sm text-muted-foreground font-body">{t.desc}</p>
-              <Button variant="outline" className="gap-2 rounded-full transition-all duration-200 hover:-translate-y-0.5">
+              <Button
+                variant="outline"
+                className="gap-2 rounded-full transition-all duration-200 hover:-translate-y-0.5"
+                onClick={() => toast.info("Em breve! Este recurso estará disponível para download em breve.")}
+              >
                 <Download className="h-4 w-4" /> Baixar grátis
               </Button>
             </div>

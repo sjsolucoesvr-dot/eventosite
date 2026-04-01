@@ -28,6 +28,11 @@ const HeroSection = () => {
 
   const theme = themes[activeTheme];
 
+  const scrollToHowItWorks = () => {
+    const el = document.getElementById("como-funciona");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <section
       className="relative pt-32 pb-24 overflow-hidden"
@@ -37,7 +42,6 @@ const HeroSection = () => {
                      hsl(40, 20%, 98%)`,
       }}
     >
-      {/* Subtle celebration background */}
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
         <div
           className="absolute inset-0"
@@ -51,7 +55,6 @@ const HeroSection = () => {
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-[55%_45%] gap-12 items-center">
-          {/* Left — text */}
           <motion.div
             className="space-y-6"
             initial={{ opacity: 0, x: -40 }}
@@ -87,16 +90,13 @@ const HeroSection = () => {
                 size="lg"
                 variant="outline"
                 className="rounded-full px-8 py-3.5 border-border text-foreground/70 hover:bg-muted"
-                asChild
+                onClick={scrollToHowItWorks}
               >
-                <Link to="/evento/ana-e-carlos">
-                  Ver exemplo ao vivo
-                </Link>
+                Ver como funciona
               </Button>
             </div>
           </motion.div>
 
-          {/* Right — mockup */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, x: 40 }}
@@ -126,7 +126,6 @@ const HeroSection = () => {
                   <Users className="h-4 w-4" /> Igreja Matriz — São Paulo, SP
                 </div>
 
-                {/* Countdown */}
                 <div className="flex justify-center gap-4 pt-4">
                   {[
                     { value: days, label: "Dias" },
@@ -154,7 +153,6 @@ const HeroSection = () => {
               </div>
             </div>
 
-            {/* Floating card — top right */}
             <motion.div
               className="absolute -top-3 -right-3 md:top-4 md:-right-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -170,7 +168,6 @@ const HeroSection = () => {
               <span className="text-sm font-body font-medium text-foreground">23 confirmações</span>
             </motion.div>
 
-            {/* Floating card — bottom left */}
             <motion.div
               className="absolute -bottom-3 -left-3 md:bottom-8 md:-left-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -186,7 +183,6 @@ const HeroSection = () => {
               <span className="text-sm font-body font-medium text-foreground">12 presentes recebidos</span>
             </motion.div>
 
-            {/* Theme selector */}
             <div className="flex justify-center gap-3 mt-6">
               {themes.map((t, i) => (
                 <button

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,9 +12,12 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  CalendarIcon, Monitor, Smartphone, Upload, Check, Image, Heart,
+  CalendarIcon, Monitor, Smartphone, Upload, Check, Image, Heart, Save, Loader2,
   Clock, BookOpen, Camera, MapPin, MessageSquare, Gift, Users, Layout, Music, MessageCircle, QrCode,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useUpdateEvent } from "@/hooks/useEvent";
+import type { EventRow } from "@/hooks/useEvent";
 
 const themes = [
   { id: "classico", name: "Clássico Dourado", primary: "#C9A96E", secondary: "#1A1A2E", bg: "#FFFDF5" },
@@ -43,7 +46,7 @@ const bodyFonts = [
   { id: "cormorant", name: "Cormorant Garamond", family: "'Cormorant Garamond', serif" },
 ];
 
-const sections = [
+const sectionsList = [
   { id: "hero", label: "Hero / Capa", icon: Layout },
   { id: "countdown", label: "Contagem Regressiva", icon: Clock },
   { id: "story", label: "Nossa História", icon: BookOpen },
@@ -58,39 +61,130 @@ const sections = [
   { id: "footer", label: "Rodapé", icon: Layout },
 ];
 
-import type { EventRow } from "@/hooks/useEvent";
-
 interface Props { event?: EventRow | null; }
 
-const DashboardSite = ({ event: _event }: Props) => {
+const DashboardSite = ({ event }: Props) => {
+  const updateEvent = useUpdateEvent();
+
+  // Content state
+  const [eventName, setEventName] = useState("");
+  const [eventType, setEventType] = useState("casamento");
   const [eventDate, setEventDate] = useState<Date>();
+  const [eventLocation, setEventLocation] = useState("");
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [story, setStory] = useState("");
   const [rsvpDate, setRsvpDate] = useState<Date>();
+  const [spotifyUrl, setSpotifyUrl] = useState("");
+
+  // Appearance state
   const [selectedTheme, setSelectedTheme] = useState("rosa");
   const [selectedFont, setSelectedFont] = useState("playfair");
   const [selectedBodyFont, setSelectedBodyFont] = useState("dm-sans");
   const [primaryColor, setPrimaryColor] = useState("#E8547A");
   const [secondaryColor, setSecondaryColor] = useState("#C9A96E");
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Sections state
   const [enabledSections, setEnabledSections] = useState<Record<string, boolean>>(
-    Object.fromEntries(sections.map((s) => [s.id, true]))
+    Object.fromEntries(sectionsList.map((s) => [s.id, true]))
   );
-  const [eventName, setEventName] = useState("Ana & Pedro");
-  const [welcomeMessage, setWelcomeMessage] = useState("Estamos muito felizes em compartilhar este momento com vocês!");
-  const [spotifyUrl, setSpotifyUrl] = useState("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M");
   const [sectionColorEditing, setSectionColorEditing] = useState<string | null>(null);
   const [sectionColors, setSectionColors] = useState<Record<string, { bg: string; text: string; accent: string }>>({});
 
-  const currentTheme = themes.find((t) => t.id === selectedTheme)!;
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
+  // Load event data
+  useEffect(() => {
+    if (!event) return;
+    setEventName(event.title || "");
+    setEventType(event.type || "casamento");
+    if (event.date) setEventDate(new Date(event.date + "T12:00:00"));
+    setEventLocation(event.location || "");
+    setWelcomeMessage(event.welcome_message || "");
+    setStory(event.story || "");
+    if (event.rsvp_deadline) setRsvpDate(new Date(event.rsvp_deadline + "T12:00:00"));
+    setSpotifyUrl(event.spotify_playlist_url || "");
+    setSelectedTheme(event.theme || "rosa");
+    setSelectedFont(event.font_title === "Boston Angel" ? "boston-angel" : event.font_title === "Playfair Display" ? "playfair" : event.font_title === "Great Vibes" ? "great-vibes" : event.font_title === "Dancing Script" ? "dancing" : event.font_title === "Cormorant Garamond" ? "cormorant" : event.font_title === "Raleway" ? "raleway" : event.font_title === "Glacial Indifference" ? "glacial" : "playfair");
+    setSelectedBodyFont(event.font_body === "Glacial Indifference" ? "glacial" : event.font_body === "Raleway" ? "raleway" : event.font_body === "Cormorant Garamond" ? "cormorant" : "dm-sans");
+    setPrimaryColor(event.color_primary || "#E8547A");
+    setSecondaryColor(event.color_secondary || "#C9A96E");
+    if (event.sections && typeof event.sections === "object") {
+      setEnabledSections(event.sections as Record<string, boolean>);
+    }
+    if (event.section_colors && typeof event.section_colors === "object") {
+      setSectionColors(event.section_colors as Record<string, { bg: string; text: string; accent: string }>);
+    }
+  }, [event]);
+
+  if (!event) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-12">
+        <p className="text-muted-foreground">Crie um evento primeiro no onboarding para editar seu site.</p>
+      </div>
+    );
+  }
+
+  const saveContent = async () => {
+    try {
+      await updateEvent.mutateAsync({
+        id: event.id,
+        title: eventName,
+        type: eventType,
+        date: eventDate ? eventDate.toISOString().split("T")[0] : null,
+        location: eventLocation,
+        welcome_message: welcomeMessage,
+        story,
+        rsvp_deadline: rsvpDate ? rsvpDate.toISOString().split("T")[0] : null,
+        spotify_playlist_url: spotifyUrl,
+      });
+      toast.success("Conteúdo salvo com sucesso!");
+    } catch {
+      toast.error("Erro ao salvar. Tente novamente.");
+    }
+  };
+
+  const saveAppearance = async () => {
+    const fontFamily = fonts.find((f) => f.id === selectedFont)?.name || "Playfair Display";
+    const bodyFamily = bodyFonts.find((f) => f.id === selectedBodyFont)?.name || "DM Sans";
+    try {
+      await updateEvent.mutateAsync({
+        id: event.id,
+        theme: selectedTheme,
+        font_title: fontFamily,
+        font_body: bodyFamily,
+        color_primary: primaryColor,
+        color_secondary: secondaryColor,
+      });
+      toast.success("Aparência salva com sucesso!");
+    } catch {
+      toast.error("Erro ao salvar. Tente novamente.");
+    }
+  };
+
+  const saveSections = async () => {
+    try {
+      await updateEvent.mutateAsync({
+        id: event.id,
+        sections: enabledSections as any,
+        section_colors: sectionColors as any,
+      });
+      toast.success("Seções salvas com sucesso!");
+    } catch {
+      toast.error("Erro ao salvar. Tente novamente.");
+    }
+  };
+
+  const currentTheme = themes.find((t) => t.id === selectedTheme) || themes[0];
   const toggleSection = (id: string) =>
     setEnabledSections((prev) => ({ ...prev, [id]: !prev[id] }));
-
   const updateSectionColor = (sectionId: string, field: "bg" | "text" | "accent", value: string) => {
     setSectionColors((prev) => ({
       ...prev,
       [sectionId]: { ...(prev[sectionId] || { bg: "", text: "", accent: "" }), [field]: value },
     }));
   };
+
+  const isSaving = updateEvent.isPending;
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
@@ -113,7 +207,7 @@ const DashboardSite = ({ event: _event }: Props) => {
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Tipo de evento</Label>
-              <Select defaultValue="casamento">
+              <Select value={eventType} onValueChange={setEventType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["Casamento", "Aniversário", "Formatura", "Batizado", "Corporativo", "Festa"].map((t) => (
@@ -138,7 +232,7 @@ const DashboardSite = ({ event: _event }: Props) => {
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Local do evento</Label>
-              <Input placeholder="Ex: Espaço Villa Garden, São Paulo - SP" />
+              <Input value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} placeholder="Ex: Espaço Villa Garden, São Paulo - SP" />
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Mensagem de boas-vindas</Label>
@@ -146,7 +240,7 @@ const DashboardSite = ({ event: _event }: Props) => {
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Texto "Nossa História"</Label>
-              <Textarea placeholder="Conte aqui como vocês se conheceram..." rows={5} />
+              <Textarea value={story} onChange={(e) => setStory(e.target.value)} placeholder="Conte aqui como vocês se conheceram..." rows={5} />
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Data limite para RSVP</Label>
@@ -165,8 +259,13 @@ const DashboardSite = ({ event: _event }: Props) => {
             <div className="space-y-2">
               <Label className="font-body text-sm">Link da Playlist (Spotify Embed)</Label>
               <Input value={spotifyUrl} onChange={(e) => setSpotifyUrl(e.target.value)} placeholder="https://open.spotify.com/embed/playlist/..." />
-              <p className="text-xs text-muted-foreground">Cole a URL embed de uma playlist do Spotify</p>
             </div>
+
+            {/* Save button */}
+            <Button onClick={saveContent} disabled={isSaving} className="w-full rounded-full gap-2 mt-4">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Salvar conteúdo
+            </Button>
           </TabsContent>
 
           <TabsContent value="aparencia" className="space-y-6">
@@ -273,11 +372,17 @@ const DashboardSite = ({ event: _event }: Props) => {
                 <p className="text-xs text-muted-foreground/60 mt-1">Até 20 fotos</p>
               </div>
             </div>
+
+            {/* Save button */}
+            <Button onClick={saveAppearance} disabled={isSaving} className="w-full rounded-full gap-2 mt-4">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Salvar aparência
+            </Button>
           </TabsContent>
 
           <TabsContent value="secoes" className="space-y-3">
             <p className="text-sm text-muted-foreground mb-4">Ative ou desative seções do seu site. Clique no ícone de paleta para customizar cores por seção.</p>
-            {sections.map((section) => (
+            {sectionsList.map((section) => (
               <div key={section.id}>
                 <div className="flex items-center justify-between rounded-xl border border-border p-4 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-3">
@@ -308,52 +413,22 @@ const DashboardSite = ({ event: _event }: Props) => {
                       <div className="space-y-1">
                         <Label className="text-xs">Fundo</Label>
                         <div className="flex items-center gap-1">
-                          <input
-                            type="color"
-                            value={sectionColors[section.id]?.bg || currentTheme.bg}
-                            onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)}
-                            className="w-8 h-8 rounded border border-border cursor-pointer"
-                          />
-                          <Input
-                            value={sectionColors[section.id]?.bg || ""}
-                            onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)}
-                            placeholder="Auto"
-                            className="flex-1 font-mono text-xs h-8"
-                          />
+                          <input type="color" value={sectionColors[section.id]?.bg || currentTheme.bg} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
+                          <Input value={sectionColors[section.id]?.bg || ""} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
                         </div>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Texto</Label>
                         <div className="flex items-center gap-1">
-                          <input
-                            type="color"
-                            value={sectionColors[section.id]?.text || "#333333"}
-                            onChange={(e) => updateSectionColor(section.id, "text", e.target.value)}
-                            className="w-8 h-8 rounded border border-border cursor-pointer"
-                          />
-                          <Input
-                            value={sectionColors[section.id]?.text || ""}
-                            onChange={(e) => updateSectionColor(section.id, "text", e.target.value)}
-                            placeholder="Auto"
-                            className="flex-1 font-mono text-xs h-8"
-                          />
+                          <input type="color" value={sectionColors[section.id]?.text || "#333333"} onChange={(e) => updateSectionColor(section.id, "text", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
+                          <Input value={sectionColors[section.id]?.text || ""} onChange={(e) => updateSectionColor(section.id, "text", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
                         </div>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Destaque</Label>
                         <div className="flex items-center gap-1">
-                          <input
-                            type="color"
-                            value={sectionColors[section.id]?.accent || primaryColor}
-                            onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)}
-                            className="w-8 h-8 rounded border border-border cursor-pointer"
-                          />
-                          <Input
-                            value={sectionColors[section.id]?.accent || ""}
-                            onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)}
-                            placeholder="Auto"
-                            className="flex-1 font-mono text-xs h-8"
-                          />
+                          <input type="color" value={sectionColors[section.id]?.accent || primaryColor} onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
+                          <Input value={sectionColors[section.id]?.accent || ""} onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
                         </div>
                       </div>
                     </div>
@@ -361,6 +436,12 @@ const DashboardSite = ({ event: _event }: Props) => {
                 )}
               </div>
             ))}
+
+            {/* Save button */}
+            <Button onClick={saveSections} disabled={isSaving} className="w-full rounded-full gap-2 mt-4">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Salvar seções
+            </Button>
           </TabsContent>
         </Tabs>
       </div>
@@ -370,64 +451,30 @@ const DashboardSite = ({ event: _event }: Props) => {
         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-card">
           <span className="text-sm font-body text-muted-foreground">Preview ao vivo</span>
           <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-            <button
-              onClick={() => setPreviewMode("desktop")}
-              className={cn("p-1.5 rounded-md transition-colors", previewMode === "desktop" ? "bg-card shadow-sm" : "text-muted-foreground")}
-            >
+            <button onClick={() => setPreviewMode("desktop")} className={cn("p-1.5 rounded-md transition-colors", previewMode === "desktop" ? "bg-card shadow-sm" : "text-muted-foreground")}>
               <Monitor className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setPreviewMode("mobile")}
-              className={cn("p-1.5 rounded-md transition-colors", previewMode === "mobile" ? "bg-card shadow-sm" : "text-muted-foreground")}
-            >
+            <button onClick={() => setPreviewMode("mobile")} className={cn("p-1.5 rounded-md transition-colors", previewMode === "mobile" ? "bg-card shadow-sm" : "text-muted-foreground")}>
               <Smartphone className="w-4 h-4" />
             </button>
           </div>
         </div>
         <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
-          {/* Phone frame for mobile */}
           {previewMode === "mobile" ? (
             <div className="relative">
-              {/* Phone bezel */}
               <div className="relative w-[390px] rounded-[3rem] border-[12px] border-foreground/90 bg-foreground/90 shadow-2xl overflow-hidden">
-                {/* Notch */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-foreground/90 rounded-b-2xl z-10" />
-                {/* Screen */}
                 <div className="rounded-[2.2rem] overflow-hidden bg-card" style={{ backgroundColor: currentTheme.bg }}>
                   <div className="pt-7">
-                    <PreviewContent
-                      currentTheme={currentTheme}
-                      primaryColor={primaryColor}
-                      secondaryColor={secondaryColor}
-                      selectedFont={selectedFont}
-                      selectedBodyFont={selectedBodyFont}
-                      eventName={eventName}
-                      eventDate={eventDate}
-                      welcomeMessage={welcomeMessage}
-                      enabledSections={enabledSections}
-                    />
+                    <PreviewContent currentTheme={currentTheme} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
                   </div>
                 </div>
               </div>
-              {/* Home bar */}
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/40 rounded-full" />
             </div>
           ) : (
-            <div
-              className="w-full max-w-3xl bg-card rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden"
-              style={{ backgroundColor: currentTheme.bg }}
-            >
-              <PreviewContent
-                currentTheme={currentTheme}
-                primaryColor={primaryColor}
-                secondaryColor={secondaryColor}
-                selectedFont={selectedFont}
-                selectedBodyFont={selectedBodyFont}
-                eventName={eventName}
-                eventDate={eventDate}
-                welcomeMessage={welcomeMessage}
-                enabledSections={enabledSections}
-              />
+            <div className="w-full max-w-3xl bg-card rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden" style={{ backgroundColor: currentTheme.bg }}>
+              <PreviewContent currentTheme={currentTheme} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
             </div>
           )}
         </div>
@@ -448,33 +495,19 @@ interface PreviewContentProps {
   enabledSections: Record<string, boolean>;
 }
 
-const PreviewContent = ({
-  currentTheme,
-  primaryColor,
-  secondaryColor,
-  selectedFont,
-  selectedBodyFont,
-  eventName,
-  eventDate,
-  welcomeMessage,
-  enabledSections,
-}: PreviewContentProps) => {
+const PreviewContent = ({ currentTheme, primaryColor, secondaryColor, selectedFont, selectedBodyFont, eventName, eventDate, welcomeMessage, enabledSections }: PreviewContentProps) => {
   const bodyFamily = bodyFonts.find((f) => f.id === selectedBodyFont)?.family || "'DM Sans', sans-serif";
 
   return (
     <div style={{ fontFamily: bodyFamily }}>
-      {/* Hero Preview */}
       <div className="relative h-64 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primaryColor}22, ${secondaryColor}22)` }}>
         <Heart className="absolute top-4 left-1/2 -translate-x-1/2 w-6 h-6" style={{ color: primaryColor }} />
         <div className="text-center mt-6">
-          <h2
-            className="text-3xl font-semibold tracking-tight"
-            style={{ color: currentTheme.primary, fontFamily: fonts.find((f) => f.id === selectedFont)?.family }}
-          >
-            {eventName}
+          <h2 className="text-3xl font-semibold tracking-tight" style={{ color: currentTheme.primary, fontFamily: fonts.find((f) => f.id === selectedFont)?.family }}>
+            {eventName || "Seu Evento"}
           </h2>
           <p className="text-sm mt-2" style={{ color: "#6B7280", fontFamily: bodyFamily }}>
-            {eventDate ? format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "20 de Dezembro de 2025"}
+            {eventDate ? format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
           </p>
         </div>
       </div>
@@ -495,7 +528,7 @@ const PreviewContent = ({
 
       {enabledSections.message && (
         <div className="px-8 py-8 text-center">
-          <p className="text-sm text-muted-foreground leading-relaxed italic" style={{ fontFamily: bodyFamily }}>"{welcomeMessage}"</p>
+          <p className="text-sm text-muted-foreground leading-relaxed italic" style={{ fontFamily: bodyFamily }}>"{welcomeMessage || "Sua mensagem de boas-vindas"}"</p>
         </div>
       )}
 
