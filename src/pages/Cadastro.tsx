@@ -26,8 +26,20 @@ const Cadastro = () => {
   const [eventType, setEventType] = useState("casamento");
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signUp, signInWithGoogle, user } = useAuth();
+  const { signUp, user } = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleSignIn = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      toast.error("Erro ao cadastrar com Google");
+      return;
+    }
+    if (result.redirected) return;
+    navigate("/onboarding");
+  };
 
   if (user) {
     navigate("/onboarding", { replace: true });
