@@ -13,7 +13,12 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const links = ["Funcionalidades", "Preços", "Marketplace", "Blog"];
+  const links = [
+    { label: "Funcionalidades", href: "#funcionalidades" },
+    { label: "Preços", href: "#preços" },
+    { label: "Marketplace", href: "/marketplace" },
+    { label: "FAQ", href: "#faq" },
+  ];
 
   return (
     <nav
