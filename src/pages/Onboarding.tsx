@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart, CalendarIcon, ArrowRight, ArrowLeft, Check, Sparkles } from "lucide-react";
+import { Heart, CalendarIcon, ArrowRight, ArrowLeft, Check, Sparkles, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { eventThemes } from "@/stores/eventStore";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCreateEvent, createDefaultChecklist } from "@/hooks/useEvent";
+import { toast } from "sonner";
 
 const steps = [
   { title: "Conte sobre seu evento", desc: "Informações básicas do seu evento" },
@@ -20,17 +23,68 @@ const steps = [
 ];
 
 const Onboarding = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const createEvent = useCreateEvent();
+
   const [step, setStep] = useState(0);
+  const [eventName, setEventName] = useState("");
+  const [eventType, setEventType] = useState("casamento");
   const [eventDate, setEventDate] = useState<Date>();
+  const [eventLocation, setEventLocation] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("classico");
   const [primaryColor, setPrimaryColor] = useState("#C9A96E");
   const [secondaryColor, setSecondaryColor] = useState("#1A1A2E");
+  const [saving, setSaving] = useState(false);
 
   const progress = ((step + 1) / steps.length) * 100;
 
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "meu-evento";
+  };
+
+  const handleFinish = async () => {
+    if (!user) return;
+    if (!eventName.trim()) {
+      toast.error("Preencha o nome do evento");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const slug = generateSlug(eventName) + "-" + Date.now().toString(36);
+      const event = await createEvent.mutateAsync({
+        user_id: user.id,
+        title: eventName,
+        slug,
+        type: eventType,
+        date: eventDate ? eventDate.toISOString().split("T")[0] : null,
+        location: eventLocation,
+        theme: selectedTheme,
+        color_primary: primaryColor,
+        color_secondary: secondaryColor,
+      });
+
+      if (eventDate && event?.id) {
+        await createDefaultChecklist(event.id, eventDate);
+      }
+
+      toast.success("Evento criado com sucesso!");
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar evento");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background font-body flex flex-col">
-      {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -41,12 +95,10 @@ const Onboarding = () => {
         </div>
       </header>
 
-      {/* Progress bar */}
       <div className="h-1 bg-muted">
         <div className="h-full bg-primary transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Content */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-xl space-y-8">
           <div className="text-center">
@@ -54,12 +106,11 @@ const Onboarding = () => {
             <p className="text-muted-foreground mt-2 text-sm">{steps[step].desc}</p>
           </div>
 
-          {/* Step 1 */}
           {step === 0 && (
             <div className="space-y-5 card-premium rounded-2xl p-8">
               <div className="space-y-2">
                 <Label>Nome do evento</Label>
-                <Input placeholder="Ex: Casamento de Ana & Carlos" className="h-11" />
+                <Input value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Ex: Casamento de Ana & Carlos" className="h-11" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -78,7 +129,7 @@ const Onboarding = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Tipo de evento</Label>
-                  <Select defaultValue="casamento">
+                  <Select value={eventType} onValueChange={setEventType}>
                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {["Casamento", "Aniversário", "Formatura", "Batizado", "Corporativo", "Festa"].map((t) => (
@@ -90,12 +141,11 @@ const Onboarding = () => {
               </div>
               <div className="space-y-2">
                 <Label>Local do evento</Label>
-                <Input placeholder="Ex: Espaço Villa Verde, São Paulo/SP" className="h-11" />
+                <Input value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} placeholder="Ex: Espaço Villa Verde, São Paulo/SP" className="h-11" />
               </div>
             </div>
           )}
 
-          {/* Step 2 */}
           {step === 1 && (
             <div className="grid grid-cols-2 gap-4">
               {eventThemes.map((theme) => (
@@ -131,7 +181,6 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 3 */}
           {step === 2 && (
             <div className="card-premium rounded-2xl p-8 space-y-6">
               <div className="grid grid-cols-2 gap-6">
@@ -150,10 +199,9 @@ const Onboarding = () => {
                   </div>
                 </div>
               </div>
-              {/* Preview */}
               <div className="rounded-xl p-6 text-center space-y-3" style={{ background: secondaryColor }}>
                 <Heart className="w-6 h-6 mx-auto" style={{ color: primaryColor }} />
-                <h3 className="font-display text-2xl font-semibold" style={{ color: primaryColor }}>Ana & Carlos</h3>
+                <h3 className="font-display text-2xl font-semibold" style={{ color: primaryColor }}>{eventName || "Ana & Carlos"}</h3>
                 <p className="text-xs" style={{ color: `${primaryColor}99` }}>Preview do seu tema</p>
                 <button className="px-6 py-2 rounded-full text-sm text-white font-medium" style={{ background: primaryColor }}>
                   Confirmar Presença
@@ -162,7 +210,6 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 4 */}
           {step === 3 && (
             <div className="card-premium rounded-2xl p-8 space-y-6">
               <div className="space-y-2">
@@ -180,7 +227,6 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Navigation */}
           <div className="flex items-center justify-between">
             {step > 0 ? (
               <Button variant="outline" onClick={() => setStep(step - 1)} className="rounded-full gap-2 font-body">
@@ -194,10 +240,9 @@ const Onboarding = () => {
                 Próximo <ArrowRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button className="rounded-full gap-2 font-body" asChild>
-                <Link to="/dashboard">
-                  Concluir e ir ao Dashboard <ArrowRight className="w-4 h-4" />
-                </Link>
+              <Button onClick={handleFinish} disabled={saving} className="rounded-full gap-2 font-body">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Concluir e ir ao Dashboard <ArrowRight className="w-4 h-4" />
               </Button>
             )}
           </div>

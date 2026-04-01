@@ -8,7 +8,7 @@ const steps = [
 ];
 
 const HowItWorks = () => (
-  <section className="py-24">
+  <section id="como-funciona" className="py-24">
     <div className="max-w-6xl mx-auto px-6">
       <ScrollReveal>
         <p className="text-xs font-body uppercase tracking-widest text-primary text-center mb-3">COMO FUNCIONA</p>
