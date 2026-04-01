@@ -13,7 +13,12 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const links = ["Funcionalidades", "Preços", "Marketplace", "Blog"];
+  const links = [
+    { label: "Funcionalidades", href: "#funcionalidades" },
+    { label: "Preços", href: "#preços" },
+    { label: "Marketplace", href: "/marketplace" },
+    { label: "FAQ", href: "#faq" },
+  ];
 
   return (
     <nav
@@ -32,15 +37,25 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          {links.map((l) => (
-            <a
-              key={l}
-              href={`#${l.toLowerCase()}`}
-              className="text-sm font-body text-muted-foreground hover:text-foreground transition-colors duration-200"
-            >
-              {l}
-            </a>
-          ))}
+          {links.map((l) =>
+            l.href.startsWith("/") ? (
+              <Link
+                key={l.label}
+                to={l.href}
+                className="text-sm font-body text-muted-foreground hover:text-foreground transition-colors duration-200"
+              >
+                {l.label}
+              </Link>
+            ) : (
+              <a
+                key={l.label}
+                href={l.href}
+                className="text-sm font-body text-muted-foreground hover:text-foreground transition-colors duration-200"
+              >
+                {l.label}
+              </a>
+            )
+          )}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
@@ -71,16 +86,27 @@ const Navbar = () => {
           className="md:hidden p-4 space-y-3"
           style={{ background: "rgba(250, 250, 248, 0.95)", backdropFilter: "blur(20px)" }}
         >
-          {links.map((l) => (
-            <a
-              key={l}
-              href={`#${l.toLowerCase()}`}
-              className="block text-sm py-2 text-muted-foreground"
-              onClick={() => setMobileOpen(false)}
-            >
-              {l}
-            </a>
-          ))}
+          {links.map((l) =>
+            l.href.startsWith("/") ? (
+              <Link
+                key={l.label}
+                to={l.href}
+                className="block text-sm py-2 text-muted-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                {l.label}
+              </Link>
+            ) : (
+              <a
+                key={l.label}
+                href={l.href}
+                className="block text-sm py-2 text-muted-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                {l.label}
+              </a>
+            )
+          )}
           <div className="flex gap-2 pt-2">
             <Button variant="outline" size="sm" className="flex-1 rounded-full" asChild>
               <Link to="/login">Entrar</Link>
