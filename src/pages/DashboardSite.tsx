@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ColorPickerField from "@/components/dashboard/ColorPickerField";
 import {
   CalendarIcon, Monitor, Smartphone, Upload, Check, Image, Heart, Save, Loader2,
   Clock, BookOpen, Camera, MapPin, MessageSquare, Gift, Users, Layout, Music, MessageCircle, QrCode,
@@ -63,6 +64,15 @@ const sectionsList = [
 
 interface Props { event?: EventRow | null; }
 
+const parseLocalDate = (value?: string | null) => {
+  if (!value) return undefined;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return undefined;
+  return new Date(year, month - 1, day);
+};
+
+const formatLocalDate = (value?: Date) => (value ? format(value, "yyyy-MM-dd") : null);
+
 const DashboardSite = ({ event }: Props) => {
   const updateEvent = useUpdateEvent();
 
@@ -84,6 +94,7 @@ const DashboardSite = ({ event }: Props) => {
   const [selectedBodyFont, setSelectedBodyFont] = useState("dm-sans");
   const [primaryColor, setPrimaryColor] = useState("#E8547A");
   const [secondaryColor, setSecondaryColor] = useState("#C9A96E");
+  const [colorPreviewMode, setColorPreviewMode] = useState<"solid" | "gradient">("solid");
 
   // Sections state
   const [enabledSections, setEnabledSections] = useState<Record<string, boolean>>(
@@ -99,11 +110,11 @@ const DashboardSite = ({ event }: Props) => {
     if (!event) return;
     setEventName(event.title || "");
     setEventType(event.type || "casamento");
-    if (event.date) setEventDate(new Date(event.date + "T12:00:00"));
+    setEventDate(parseLocalDate(event.date));
     setEventLocation(event.location || "");
     setWelcomeMessage(event.welcome_message || "");
     setStory(event.story || "");
-    if (event.rsvp_deadline) setRsvpDate(new Date(event.rsvp_deadline + "T12:00:00"));
+    setRsvpDate(parseLocalDate(event.rsvp_deadline));
     setSpotifyUrl(event.spotify_playlist_url || "");
     setSelectedTheme(event.theme || "rosa");
     setSelectedFont(event.font_title === "Boston Angel" ? "boston-angel" : event.font_title === "Playfair Display" ? "playfair" : event.font_title === "Great Vibes" ? "great-vibes" : event.font_title === "Dancing Script" ? "dancing" : event.font_title === "Cormorant Garamond" ? "cormorant" : event.font_title === "Raleway" ? "raleway" : event.font_title === "Glacial Indifference" ? "glacial" : "playfair");
@@ -132,11 +143,11 @@ const DashboardSite = ({ event }: Props) => {
         id: event.id,
         title: eventName,
         type: eventType,
-        date: eventDate ? eventDate.toISOString().split("T")[0] : null,
+        date: formatLocalDate(eventDate),
         location: eventLocation,
         welcome_message: welcomeMessage,
         story,
-        rsvp_deadline: rsvpDate ? rsvpDate.toISOString().split("T")[0] : null,
+        rsvp_deadline: formatLocalDate(rsvpDate),
         spotify_playlist_url: spotifyUrl,
       });
       toast.success("Conteúdo salvo com sucesso!");
@@ -280,6 +291,7 @@ const DashboardSite = ({ event }: Props) => {
                     onClick={() => {
                       setSelectedTheme(theme.id);
                       setPrimaryColor(theme.primary);
+                      setSecondaryColor(theme.secondary);
                     }}
                     className={cn(
                       "relative rounded-2xl p-4 text-left transition-all duration-300 border",
@@ -304,20 +316,48 @@ const DashboardSite = ({ event }: Props) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="font-body text-sm">Cor principal</Label>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded-lg border border-border cursor-pointer" />
-                  <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 font-mono text-xs" />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <Label className="font-body text-sm font-medium">Editor de cores</Label>
+                <div className="inline-flex rounded-full border border-border bg-muted/40 p-1">
+                  <button
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
+                      colorPreviewMode === "solid" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                    onClick={() => setColorPreviewMode("solid")}
+                    type="button"
+                  >
+                    Cor sólida
+                  </button>
+                  <button
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
+                      colorPreviewMode === "gradient" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                    onClick={() => setColorPreviewMode("gradient")}
+                    type="button"
+                  >
+                    Gradiente
+                  </button>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="font-body text-sm">Cor secundária</Label>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="w-10 h-10 rounded-lg border border-border cursor-pointer" />
-                  <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="flex-1 font-mono text-xs" />
-                </div>
+
+              <div className="grid gap-4 xl:grid-cols-2">
+                <ColorPickerField
+                  label="Cor principal"
+                  onChange={setPrimaryColor}
+                  previewMode={colorPreviewMode}
+                  secondaryValue={secondaryColor}
+                  value={primaryColor}
+                />
+                <ColorPickerField
+                  label="Cor secundária"
+                  onChange={setSecondaryColor}
+                  previewMode={colorPreviewMode}
+                  secondaryValue={primaryColor}
+                  value={secondaryColor}
+                />
               </div>
             </div>
 
