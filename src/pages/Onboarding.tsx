@@ -32,6 +32,7 @@ const Onboarding = () => {
   const [eventType, setEventType] = useState("casamento");
   const [eventDate, setEventDate] = useState<Date>();
   const [eventLocation, setEventLocation] = useState("");
+  const [dateOpen, setDateOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState("classico");
   const [primaryColor, setPrimaryColor] = useState("#C9A96E");
   const [secondaryColor, setSecondaryColor] = useState("#1A1A2E");
@@ -115,7 +116,7 @@ const Onboarding = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Data do evento</Label>
-                  <Popover>
+                  <Popover open={dateOpen} onOpenChange={setDateOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className={cn("w-full h-11 justify-start font-normal", !eventDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -123,7 +124,7 @@ const Onboarding = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={eventDate} onSelect={setEventDate} locale={ptBR} className="p-3 pointer-events-auto" />
+                      <Calendar mode="single" selected={eventDate} onSelect={(d) => { setEventDate(d); setDateOpen(false); }} locale={ptBR} className="p-3 pointer-events-auto" />
                     </PopoverContent>
                   </Popover>
                 </div>

@@ -75,6 +75,8 @@ const DashboardSite = ({ event }: Props) => {
   const [story, setStory] = useState("");
   const [rsvpDate, setRsvpDate] = useState<Date>();
   const [spotifyUrl, setSpotifyUrl] = useState("");
+  const [eventDateOpen, setEventDateOpen] = useState(false);
+  const [rsvpDateOpen, setRsvpDateOpen] = useState(false);
 
   // Appearance state
   const [selectedTheme, setSelectedTheme] = useState("rosa");
@@ -218,7 +220,7 @@ const DashboardSite = ({ event }: Props) => {
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Data do evento</Label>
-              <Popover>
+              <Popover open={eventDateOpen} onOpenChange={setEventDateOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !eventDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -226,7 +228,7 @@ const DashboardSite = ({ event }: Props) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={eventDate} onSelect={setEventDate} locale={ptBR} className="p-3 pointer-events-auto" />
+                  <Calendar mode="single" selected={eventDate} onSelect={(d) => { setEventDate(d); setEventDateOpen(false); }} locale={ptBR} className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>
@@ -244,7 +246,7 @@ const DashboardSite = ({ event }: Props) => {
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Data limite para RSVP</Label>
-              <Popover>
+              <Popover open={rsvpDateOpen} onOpenChange={setRsvpDateOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !rsvpDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -252,7 +254,7 @@ const DashboardSite = ({ event }: Props) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={rsvpDate} onSelect={setRsvpDate} locale={ptBR} className="p-3 pointer-events-auto" />
+                  <Calendar mode="single" selected={rsvpDate} onSelect={(d) => { setRsvpDate(d); setRsvpDateOpen(false); }} locale={ptBR} className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>

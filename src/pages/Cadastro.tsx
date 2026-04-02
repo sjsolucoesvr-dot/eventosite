@@ -24,6 +24,7 @@ const Cadastro = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState("casamento");
+  const [dateOpen, setDateOpen] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp, user } = useAuth();
@@ -120,7 +121,7 @@ const Cadastro = () => {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="font-body text-sm">Data do evento</Label>
-                <Popover>
+                <Popover open={dateOpen} onOpenChange={setDateOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full h-11 justify-start text-left font-normal", !eventDate && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -128,7 +129,7 @@ const Cadastro = () => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={eventDate} onSelect={setEventDate} locale={ptBR} className="p-3 pointer-events-auto" />
+                    <Calendar mode="single" selected={eventDate} onSelect={(d) => { setEventDate(d); setDateOpen(false); }} locale={ptBR} className="p-3 pointer-events-auto" />
                   </PopoverContent>
                 </Popover>
               </div>
