@@ -189,7 +189,7 @@ const SupplierProfile = () => {
         </div>
       </section>
 
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 };

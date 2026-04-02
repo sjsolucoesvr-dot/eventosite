@@ -44,7 +44,7 @@ const suppliers = [
   { id: 12, name: "Celebrar Cerimonial", category: "cerimonialista", city: "São Paulo, SP", rating: 4.9, reviews: 145, priceMin: 3000, priceMax: 8000, description: "Assessoria completa de casamento. Do planejamento à coordenação do grande dia." },
 ];
 
-const Marketplace = () => {
+const Marketplace = ({ embedded }: { embedded?: boolean }) => {
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [city, setCity] = useState("all");
