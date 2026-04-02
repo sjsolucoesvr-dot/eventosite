@@ -75,6 +75,8 @@ const DashboardSite = ({ event }: Props) => {
   const [story, setStory] = useState("");
   const [rsvpDate, setRsvpDate] = useState<Date>();
   const [spotifyUrl, setSpotifyUrl] = useState("");
+  const [eventDateOpen, setEventDateOpen] = useState(false);
+  const [rsvpDateOpen, setRsvpDateOpen] = useState(false);
 
   // Appearance state
   const [selectedTheme, setSelectedTheme] = useState("rosa");
