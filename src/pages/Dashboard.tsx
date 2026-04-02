@@ -10,7 +10,7 @@ import DashboardChecklist from "@/pages/DashboardChecklist";
 import DashboardSettings from "@/pages/DashboardSettings";
 import { useUserEvent } from "@/hooks/useEvent";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell } from "lucide-react";
+import { Bell, Eye } from "lucide-react";
 import { useNotifications, useMarkNotificationsRead } from "@/hooks/useEvent";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
