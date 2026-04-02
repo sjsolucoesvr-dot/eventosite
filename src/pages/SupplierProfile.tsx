@@ -54,7 +54,7 @@ const SupplierProfile = ({ embedded }: { embedded?: boolean }) => {
     <div className={`${embedded ? '' : 'min-h-screen'} font-body bg-background`}>
       {!embedded && <Navbar />}
 
-      <section className="pt-28 pb-24 px-6">
+      <section className={`${embedded ? 'pt-8' : 'pt-28'} pb-24 px-6`}>
         <div className="max-w-5xl mx-auto">
           <Link to={embedded ? "/dashboard/marketplace" : "/marketplace"} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4" /> Voltar ao marketplace

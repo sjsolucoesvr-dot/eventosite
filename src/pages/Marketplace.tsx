@@ -73,7 +73,7 @@ const Marketplace = ({ embedded }: { embedded?: boolean }) => {
       {!embedded && <Navbar />}
 
       {/* Hero */}
-      <section className="pt-32 pb-12 px-6">
+      <section className={`${embedded ? 'pt-8' : 'pt-32'} pb-12 px-6`}>
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
             Encontre os melhores <em className="text-primary not-italic">fornecedores</em>
