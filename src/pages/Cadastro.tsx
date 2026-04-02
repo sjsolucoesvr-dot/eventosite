@@ -24,6 +24,7 @@ const Cadastro = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState("casamento");
+  const [dateOpen, setDateOpen] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp, user } = useAuth();
