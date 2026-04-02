@@ -99,6 +99,8 @@ const Dashboard = () => {
               <Route path="gifts" element={<div className="p-6"><DashboardGifts event={event} /></div>} />
               <Route path="finance" element={<div className="p-6"><DashboardFinance event={event} /></div>} />
               <Route path="checklist" element={<div className="p-6"><DashboardChecklist event={event} /></div>} />
+              <Route path="marketplace" element={<Marketplace embedded />} />
+              <Route path="marketplace/fornecedor/:id" element={<SupplierProfile embedded />} />
               <Route path="settings" element={<DashboardSettings />} />
             </Routes>
           </main>
