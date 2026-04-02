@@ -213,7 +213,7 @@ const Marketplace = ({ embedded }: { embedded?: boolean }) => {
                       <p className="text-sm font-body font-medium text-foreground mt-3">
                         R$ {supplier.priceMin.toLocaleString("pt-BR")} a R$ {supplier.priceMax.toLocaleString("pt-BR")}
                       </p>
-                      <Link to={`/marketplace/fornecedor/${supplier.id}`}>
+                      <Link to={embedded ? `/dashboard/marketplace/fornecedor/${supplier.id}` : `/marketplace/fornecedor/${supplier.id}`}>
                         <Button className="w-full mt-4 rounded-full font-body" size="sm">Ver perfil</Button>
                       </Link>
                     </div>
