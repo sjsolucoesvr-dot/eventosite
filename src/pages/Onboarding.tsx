@@ -32,6 +32,7 @@ const Onboarding = () => {
   const [eventType, setEventType] = useState("casamento");
   const [eventDate, setEventDate] = useState<Date>();
   const [eventLocation, setEventLocation] = useState("");
+  const [dateOpen, setDateOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState("classico");
   const [primaryColor, setPrimaryColor] = useState("#C9A96E");
   const [secondaryColor, setSecondaryColor] = useState("#1A1A2E");
