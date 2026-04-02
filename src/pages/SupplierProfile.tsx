@@ -44,7 +44,7 @@ const defaultSupplier = {
   ],
 };
 
-const SupplierProfile = () => {
+const SupplierProfile = ({ embedded }: { embedded?: boolean }) => {
   const { id } = useParams();
   const supplier = suppliersData[id || ""] || defaultSupplier;
   const [currentImage, setCurrentImage] = useState(0);
