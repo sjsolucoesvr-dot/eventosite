@@ -69,8 +69,8 @@ const Marketplace = () => {
   });
 
   return (
-    <div className="min-h-screen font-body bg-background">
-      <Navbar />
+    <div className={`${embedded ? '' : 'min-h-screen'} font-body bg-background`}>
+      {!embedded && <Navbar />}
 
       {/* Hero */}
       <section className="pt-32 pb-12 px-6">
