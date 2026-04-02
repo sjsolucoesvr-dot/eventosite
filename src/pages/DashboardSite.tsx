@@ -220,7 +220,7 @@ const DashboardSite = ({ event }: Props) => {
             </div>
             <div className="space-y-2">
               <Label className="font-body text-sm">Data do evento</Label>
-              <Popover>
+              <Popover open={eventDateOpen} onOpenChange={setEventDateOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !eventDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -228,7 +228,7 @@ const DashboardSite = ({ event }: Props) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={eventDate} onSelect={setEventDate} locale={ptBR} className="p-3 pointer-events-auto" />
+                  <Calendar mode="single" selected={eventDate} onSelect={(d) => { setEventDate(d); setEventDateOpen(false); }} locale={ptBR} className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>
