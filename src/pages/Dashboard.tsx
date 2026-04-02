@@ -81,6 +81,13 @@ const Dashboard = () => {
               <h1 className="font-display font-semibold text-lg">Dashboard</h1>
             </div>
             <div className="flex items-center gap-2">
+              {event?.slug && (
+                <Button variant="ghost" size="icon" asChild>
+                  <a href={`/evento/${event.slug}`} target="_blank" rel="noopener noreferrer" title="Ver site do evento">
+                    <Eye className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
               <NotificationBell />
             </div>
           </header>
