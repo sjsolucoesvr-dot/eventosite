@@ -225,7 +225,7 @@ const Marketplace = () => {
         </div>
       </section>
 
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 };
