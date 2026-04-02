@@ -51,8 +51,8 @@ const SupplierProfile = () => {
   const totalImages = 5;
 
   return (
-    <div className="min-h-screen font-body bg-background">
-      <Navbar />
+    <div className={`${embedded ? '' : 'min-h-screen'} font-body bg-background`}>
+      {!embedded && <Navbar />}
 
       <section className="pt-28 pb-24 px-6">
         <div className="max-w-5xl mx-auto">
