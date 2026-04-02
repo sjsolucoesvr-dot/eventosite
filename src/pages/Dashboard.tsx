@@ -8,6 +8,8 @@ import DashboardGifts from "@/pages/DashboardGifts";
 import DashboardFinance from "@/pages/DashboardFinance";
 import DashboardChecklist from "@/pages/DashboardChecklist";
 import DashboardSettings from "@/pages/DashboardSettings";
+import Marketplace from "@/pages/Marketplace";
+import SupplierProfile from "@/pages/SupplierProfile";
 import { useUserEvent } from "@/hooks/useEvent";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell, Eye } from "lucide-react";
