@@ -8,9 +8,11 @@ import DashboardGifts from "@/pages/DashboardGifts";
 import DashboardFinance from "@/pages/DashboardFinance";
 import DashboardChecklist from "@/pages/DashboardChecklist";
 import DashboardSettings from "@/pages/DashboardSettings";
+import Marketplace from "@/pages/Marketplace";
+import SupplierProfile from "@/pages/SupplierProfile";
 import { useUserEvent } from "@/hooks/useEvent";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell } from "lucide-react";
+import { Bell, Eye } from "lucide-react";
 import { useNotifications, useMarkNotificationsRead } from "@/hooks/useEvent";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -79,6 +81,13 @@ const Dashboard = () => {
               <h1 className="font-display font-semibold text-lg">Dashboard</h1>
             </div>
             <div className="flex items-center gap-2">
+              {event?.slug && (
+                <Button variant="ghost" size="icon" asChild>
+                  <a href={`/evento/${event.slug}`} target="_blank" rel="noopener noreferrer" title="Ver site do evento">
+                    <Eye className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
               <NotificationBell />
             </div>
           </header>
@@ -90,6 +99,8 @@ const Dashboard = () => {
               <Route path="gifts" element={<div className="p-6"><DashboardGifts event={event} /></div>} />
               <Route path="finance" element={<div className="p-6"><DashboardFinance event={event} /></div>} />
               <Route path="checklist" element={<div className="p-6"><DashboardChecklist event={event} /></div>} />
+              <Route path="marketplace" element={<Marketplace embedded />} />
+              <Route path="marketplace/fornecedor/:id" element={<SupplierProfile embedded />} />
               <Route path="settings" element={<DashboardSettings />} />
             </Routes>
           </main>

@@ -16,7 +16,7 @@ const items = [
   { title: "Lista de Presentes", url: "/dashboard/gifts", icon: Gift },
   { title: "Financeiro", url: "/dashboard/finance", icon: DollarSign },
   { title: "Checklist", url: "/dashboard/checklist", icon: ListChecks },
-  { title: "Marketplace", url: "/marketplace", icon: Store },
+  { title: "Marketplace", url: "/dashboard/marketplace", icon: Store },
   { title: "Configurações", url: "/dashboard/settings", icon: Settings },
 ];
 

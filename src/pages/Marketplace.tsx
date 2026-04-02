@@ -44,7 +44,7 @@ const suppliers = [
   { id: 12, name: "Celebrar Cerimonial", category: "cerimonialista", city: "São Paulo, SP", rating: 4.9, reviews: 145, priceMin: 3000, priceMax: 8000, description: "Assessoria completa de casamento. Do planejamento à coordenação do grande dia." },
 ];
 
-const Marketplace = () => {
+const Marketplace = ({ embedded }: { embedded?: boolean }) => {
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [city, setCity] = useState("all");
@@ -69,11 +69,11 @@ const Marketplace = () => {
   });
 
   return (
-    <div className="min-h-screen font-body bg-background">
-      <Navbar />
+    <div className={`${embedded ? '' : 'min-h-screen'} font-body bg-background`}>
+      {!embedded && <Navbar />}
 
       {/* Hero */}
-      <section className="pt-32 pb-12 px-6">
+      <section className={`${embedded ? 'pt-8' : 'pt-32'} pb-12 px-6`}>
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
             Encontre os melhores <em className="text-primary not-italic">fornecedores</em>
@@ -213,7 +213,7 @@ const Marketplace = () => {
                       <p className="text-sm font-body font-medium text-foreground mt-3">
                         R$ {supplier.priceMin.toLocaleString("pt-BR")} a R$ {supplier.priceMax.toLocaleString("pt-BR")}
                       </p>
-                      <Link to={`/marketplace/fornecedor/${supplier.id}`}>
+                      <Link to={embedded ? `/dashboard/marketplace/fornecedor/${supplier.id}` : `/marketplace/fornecedor/${supplier.id}`}>
                         <Button className="w-full mt-4 rounded-full font-body" size="sm">Ver perfil</Button>
                       </Link>
                     </div>
@@ -225,7 +225,7 @@ const Marketplace = () => {
         </div>
       </section>
 
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 };
