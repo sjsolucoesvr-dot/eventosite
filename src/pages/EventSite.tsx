@@ -61,8 +61,8 @@ const EventSite = () => {
   const [rsvpCompanions, setRsvpCompanions] = useState("0");
   const [rsvpDietary, setRsvpDietary] = useState("");
   const [rsvpMessage, setRsvpMessage] = useState("");
+  const heroRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
