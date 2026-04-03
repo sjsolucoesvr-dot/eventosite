@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEventStore, eventThemes } from "@/stores/eventStore";
+import { usePublicEvent, useGifts, useWallMessages, useAddWallMessage, useGalleryPhotos, useAddGuest } from "@/hooks/useEvent";
+import { eventThemes } from "@/stores/eventStore";
 import { Heart, Calendar, MapPin, Users, ChevronDown, Send, Gift, Clock, ArrowUp, Music, MessageCircle, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds, format } from "date-fns";
+import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds, format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { toast } from "sonner";
 
 const ScrollSection = ({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => {
   const ref = useRef(null);
@@ -37,7 +39,13 @@ const SectionDivider = ({ color }: { color: string }) => (
 
 const EventSite = () => {
   const { slug } = useParams();
-  const { event, guests, gifts, wallMessages, addWallMessage } = useEventStore();
+  const { data: event, isLoading, error } = usePublicEvent(slug || "");
+  const { data: gifts } = useGifts(event?.id);
+  const { data: wallMessages } = useWallMessages(event?.id);
+  const { data: galleryPhotos } = useGalleryPhotos(event?.id);
+  const addWallMessage = useAddWallMessage();
+  const addGuest = useAddGuest();
+
   const [now, setNow] = useState(new Date());
   const [navVisible, setNavVisible] = useState(true);
   const [rsvpSent, setRsvpSent] = useState(false);
@@ -46,7 +54,14 @@ const EventSite = () => {
   const [wallMsg, setWallMsg] = useState("");
   const [showQR, setShowQR] = useState(false);
 
-  const theme = eventThemes.find((t) => t.id === event.themeId) || eventThemes[0];
+  // RSVP form state
+  const [rsvpName, setRsvpName] = useState("");
+  const [rsvpEmail, setRsvpEmail] = useState("");
+  const [rsvpStatus, setRsvpStatus] = useState("sim");
+  const [rsvpCompanions, setRsvpCompanions] = useState("0");
+  const [rsvpDietary, setRsvpDietary] = useState("");
+  const [rsvpMessage, setRsvpMessage] = useState("");
+  const heroRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
@@ -64,39 +79,107 @@ const EventSite = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const days = Math.max(0, differenceInDays(event.date, now));
-  const hours = Math.max(0, differenceInHours(event.date, now) % 24);
-  const minutes = Math.max(0, differenceInMinutes(event.date, now) % 60);
-  const seconds = Math.max(0, differenceInSeconds(event.date, now) % 60);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
-  const availableGifts = gifts.filter((g) => g.status === "available");
+  if (error || !event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Heart className="w-12 h-12 mx-auto text-muted-foreground" />
+          <h1 className="text-2xl font-display font-bold">Evento não encontrado</h1>
+          <p className="text-muted-foreground">O evento que você procura não existe ou não está publicado.</p>
+          <Link to="/" className="inline-block text-primary hover:underline">← Voltar ao início</Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Resolve theme from DB
+  const dbTheme = eventThemes.find((t) => t.id === event.theme) || eventThemes[0];
+  const theme = {
+    primaryDark: dbTheme.primaryDark,
+    primary: event.color_primary || dbTheme.primary,
+    primaryLight: event.color_secondary || dbTheme.primaryLight,
+  };
+
+  const sections = (event.sections as Record<string, boolean>) || {
+    hero: true, countdown: true, story: true, gallery: true, info: true,
+    rsvp: true, gifts: true, location: true, message: true, footer: true,
+    playlist: true, wall: true,
+  };
+
+  const eventDate = event.date ? parseISO(event.date) : new Date();
+  const days = Math.max(0, differenceInDays(eventDate, now));
+  const hours = Math.max(0, differenceInHours(eventDate, now) % 24);
+  const minutes = Math.max(0, differenceInMinutes(eventDate, now) % 60);
+  const seconds = Math.max(0, differenceInSeconds(eventDate, now) % 60);
+
+  const availableGifts = (gifts || []).filter((g) => g.status === "available" || !g.status);
 
   const navLinks = [
-    event.enabledSections.story && { label: "Nossa História", href: "#historia" },
-    event.enabledSections.gallery && { label: "Galeria", href: "#galeria" },
-    event.enabledSections.info && { label: "Informações", href: "#informacoes" },
-    event.enabledSections.rsvp && { label: "Confirmar Presença", href: "#rsvp" },
-    event.enabledSections.wall && { label: "Recados", href: "#recados" },
+    sections.story && { label: "Nossa História", href: "#historia" },
+    sections.gallery && { label: "Galeria", href: "#galeria" },
+    sections.info && { label: "Informações", href: "#informacoes" },
+    sections.rsvp && { label: "Confirmar Presença", href: "#rsvp" },
+    sections.wall && { label: "Recados", href: "#recados" },
   ].filter(Boolean) as { label: string; href: string }[];
-
-  const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const siteUrl = `${window.location.origin}/evento/${event.slug}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(siteUrl)}&color=${theme.primary.replace("#", "")}&bgcolor=${theme.primaryLight.replace("#", "")}`;
 
+  const titleFont = event.font_title || "Boston Angel";
+  const bodyFont = event.font_body || "Glacial Indifference";
+
   const handleWallSubmit = () => {
-    if (wallName.trim() && wallMsg.trim()) {
-      addWallMessage(wallName.trim(), wallMsg.trim());
+    if (wallName.trim() && wallMsg.trim() && event.id) {
+      addWallMessage.mutate({
+        event_id: event.id,
+        name: wallName.trim(),
+        message: wallMsg.trim(),
+      });
       setWallName("");
       setWallMsg("");
+      toast.success("Recado enviado!");
     }
   };
 
+  const handleRsvpSubmit = () => {
+    if (!rsvpName.trim() || !event.id) return;
+    const statusMap: Record<string, string> = { sim: "confirmed", talvez: "pending", nao: "declined" };
+    addGuest.mutate({
+      event_id: event.id,
+      full_name: rsvpName.trim(),
+      email: rsvpEmail.trim() || null,
+      status: statusMap[rsvpStatus] || "pending",
+      companions: parseInt(rsvpCompanions) || 0,
+      dietary: rsvpDietary.trim() || null,
+      message: rsvpMessage.trim() || null,
+      confirmed_at: new Date().toISOString(),
+    }, {
+      onSuccess: () => setRsvpSent(true),
+      onError: () => toast.error("Erro ao confirmar presença"),
+    });
+  };
+
+  const defaultGalleryPhotos = [
+    "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&q=75",
+    "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=75",
+    "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&q=75",
+    "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&q=75",
+    "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&q=75",
+    "https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=75",
+  ];
+
+  const photos = galleryPhotos?.length ? galleryPhotos.map(p => p.url) : defaultGalleryPhotos;
+
   return (
-    <div className="min-h-screen" style={{ fontFamily: event.fontFamily, background: theme.primaryLight }}>
+    <div className="min-h-screen" style={{ fontFamily: bodyFont, background: theme.primaryLight }}>
       {/* Navbar */}
       <motion.nav
         initial={{ y: 0 }}
@@ -110,7 +193,7 @@ const EventSite = () => {
         }}
       >
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-semibold text-sm" style={{ color: theme.primary }}>{event.name}</span>
+          <span className="font-semibold text-sm" style={{ color: theme.primary, fontFamily: titleFont }}>{event.title}</span>
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <a key={link.href} href={link.href} className="text-xs font-medium transition-colors duration-200 hover:opacity-100 opacity-70" style={{ color: theme.primaryLight }}>
@@ -148,7 +231,7 @@ const EventSite = () => {
               {siteUrl}
             </p>
             <button
-              onClick={() => { navigator.clipboard.writeText(siteUrl); }}
+              onClick={() => { navigator.clipboard.writeText(siteUrl); toast.success("Link copiado!"); }}
               className="px-6 py-2 rounded-full text-sm font-medium"
               style={{ background: theme.primary, color: theme.primaryLight }}
             >
@@ -159,17 +242,16 @@ const EventSite = () => {
       )}
 
       {/* HERO */}
-      {event.enabledSections.hero && (
+      {sections.hero && (
         <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
-          <motion.div
+          <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80')`,
-              y: heroY,
+              backgroundImage: `url('${event.hero_image_url || "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80"}')`,
             }}
           />
           <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${theme.primaryDark}99, ${theme.primaryDark}DD)` }} />
-          <motion.div className="relative z-10 text-center space-y-6 px-6" style={{ opacity: heroOpacity }}>
+          <motion.div className="relative z-10 text-center space-y-6 px-6">
             <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ duration: 0.8, delay: 0.3 }}>
               <svg className="w-14 h-14 mx-auto" viewBox="0 0 56 56" fill="none">
                 <path d="M28 48s-18-12-18-24a10 10 0 0 1 18-6 10 10 0 0 1 18 6c0 12-18 24-18 24z" fill={theme.primary} opacity="0.3" />
@@ -179,33 +261,37 @@ const EventSite = () => {
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
               className="text-xs uppercase tracking-[0.3em] font-medium" style={{ color: `${theme.primary}CC` }}>
-              Convidam para o {event.type}
+              Convidam para o {event.type || "casamento"}
             </motion.p>
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
-              className="text-5xl md:text-7xl font-bold leading-tight" style={{ color: theme.primaryLight }}>
-              {event.name}
+              className="text-5xl md:text-7xl font-bold leading-tight" style={{ color: theme.primaryLight, fontFamily: titleFont }}>
+              {event.title}
             </motion.h1>
 
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
-              className="text-lg italic" style={{ color: `${theme.primaryLight}BB` }}>
-              "{event.welcomeMessage.slice(0, 60)}..."
-            </motion.p>
+            {event.subtitle && (
+              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+                className="text-lg italic" style={{ color: `${theme.primaryLight}BB` }}>
+                "{event.subtitle}"
+              </motion.p>
+            )}
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}
               className="flex items-center justify-center gap-6 text-sm" style={{ color: `${theme.primaryLight}CC` }}>
               <span className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" style={{ color: theme.primary }} />
-                {format(event.date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                {format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </span>
-              <span className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" style={{ color: theme.primary }} />
-                {event.location}
-              </span>
+              {event.location && (
+                <span className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" style={{ color: theme.primary }} />
+                  {event.location}
+                </span>
+              )}
             </motion.div>
 
             {/* Countdown */}
-            {event.enabledSections.countdown && (
+            {sections.countdown && (
               <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.3 }}
                 className="flex justify-center gap-4 pt-4">
                 {[
@@ -245,7 +331,7 @@ const EventSite = () => {
       )}
 
       {/* OUR STORY */}
-      {event.enabledSections.story && (
+      {sections.story && event.story && (
         <section id="historia" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-3xl mx-auto text-center">
             <ScrollSection>
@@ -260,7 +346,7 @@ const EventSite = () => {
       )}
 
       {/* GALLERY */}
-      {event.enabledSections.gallery && (
+      {sections.gallery && (
         <section id="galeria" className="py-24 px-6" style={{ background: theme.primaryDark }}>
           <div className="max-w-5xl mx-auto">
             <ScrollSection>
@@ -268,14 +354,7 @@ const EventSite = () => {
               <SectionDivider color={theme.primary} />
             </ScrollSection>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {[
-                "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&q=75",
-                "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=75",
-                "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&q=75",
-                "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&q=75",
-                "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&q=75",
-                "https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=75",
-              ].map((url, i) => (
+              {photos.map((url, i) => (
                 <ScrollSection key={i} delay={i * 0.1}>
                   <div className="aspect-square rounded-xl overflow-hidden cursor-pointer group">
                     <img src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
@@ -288,7 +367,7 @@ const EventSite = () => {
       )}
 
       {/* EVENT INFO */}
-      {event.enabledSections.info && (
+      {sections.info && (
         <section id="informacoes" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-4xl mx-auto">
             <ScrollSection>
@@ -297,10 +376,10 @@ const EventSite = () => {
             </ScrollSection>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: Calendar, title: "Data e Hora", info: format(event.date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) },
-                { icon: MapPin, title: "Local", info: event.location },
+                { icon: Calendar, title: "Data", info: format(eventDate, "dd/MM/yyyy", { locale: ptBR }) },
+                { icon: MapPin, title: "Local", info: event.location || "A definir" },
                 { icon: Users, title: "Traje", info: "Traje Social" },
-                { icon: Clock, title: "Horário", info: "Cerimônia às 16h\nRecepção às 18h" },
+                { icon: Clock, title: "Horário", info: event.time ? `${event.time}h` : "A definir" },
               ].map((card, i) => (
                 <ScrollSection key={i} delay={i * 0.1}>
                   <div className="text-center p-6 rounded-2xl" style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}20` }}>
@@ -312,13 +391,16 @@ const EventSite = () => {
               ))}
             </div>
 
-            {event.enabledSections.location && (
+            {sections.location && event.location && (
               <ScrollSection delay={0.3}>
                 <div className="mt-8 rounded-2xl overflow-hidden h-64 flex items-center justify-center"
                   style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}20` }}>
                   <div className="text-center">
                     <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: `${theme.primary}80` }} />
                     <p className="text-sm" style={{ color: theme.primaryDark }}>{event.location}</p>
+                    {event.location_address && (
+                      <p className="text-xs mt-1" style={{ color: `${theme.primaryDark}99` }}>{event.location_address}</p>
+                    )}
                   </div>
                 </div>
               </ScrollSection>
@@ -328,7 +410,7 @@ const EventSite = () => {
       )}
 
       {/* PLAYLIST */}
-      {event.enabledSections.playlist && (
+      {sections.playlist && event.spotify_playlist_url && (
         <section className="py-24 px-6" style={{ background: theme.primaryDark }}>
           <div className="max-w-3xl mx-auto">
             <ScrollSection>
@@ -341,7 +423,7 @@ const EventSite = () => {
             <ScrollSection delay={0.2}>
               <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${theme.primary}20` }}>
                 <iframe
-                  src={event.spotifyPlaylistUrl}
+                  src={event.spotify_playlist_url}
                   width="100%"
                   height="380"
                   frameBorder="0"
@@ -357,13 +439,13 @@ const EventSite = () => {
       )}
 
       {/* RSVP */}
-      {event.enabledSections.rsvp && (
+      {sections.rsvp && (
         <section id="rsvp" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-lg mx-auto">
             <ScrollSection>
               <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Confirmar Presença</p>
               <SectionDivider color={theme.primary} />
-              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: theme.primaryDark }}>
+              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: theme.primaryDark, fontFamily: titleFont }}>
                 Será uma honra ter você conosco
               </h2>
             </ScrollSection>
@@ -388,15 +470,17 @@ const EventSite = () => {
                 <div className="space-y-4 p-6 rounded-2xl" style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}20` }}>
                   <div className="space-y-2">
                     <Label className="text-sm" style={{ color: theme.primaryDark }}>Nome completo</Label>
-                    <Input placeholder="Seu nome" className="h-11" style={{ borderColor: `${theme.primary}30`, background: `${theme.primaryLight}` }} />
+                    <Input placeholder="Seu nome" className="h-11" value={rsvpName} onChange={(e) => setRsvpName(e.target.value)}
+                      style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm" style={{ color: theme.primaryDark }}>Email</Label>
-                    <Input type="email" placeholder="seu@email.com" className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                    <Input type="email" placeholder="seu@email.com" className="h-11" value={rsvpEmail} onChange={(e) => setRsvpEmail(e.target.value)}
+                      style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm" style={{ color: theme.primaryDark }}>Confirmação</Label>
-                    <Select defaultValue="sim">
+                    <Select value={rsvpStatus} onValueChange={setRsvpStatus}>
                       <SelectTrigger className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }}>
                         <SelectValue />
                       </SelectTrigger>
@@ -410,23 +494,27 @@ const EventSite = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label className="text-sm" style={{ color: theme.primaryDark }}>Nº acompanhantes</Label>
-                      <Input type="number" defaultValue="0" min="0" max="5" className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                      <Input type="number" value={rsvpCompanions} onChange={(e) => setRsvpCompanions(e.target.value)} min="0" max="5" className="h-11"
+                        style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-sm" style={{ color: theme.primaryDark }}>Restrição alimentar</Label>
-                      <Input placeholder="Ex: Vegetariano" className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                      <Input placeholder="Ex: Vegetariano" className="h-11" value={rsvpDietary} onChange={(e) => setRsvpDietary(e.target.value)}
+                        style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm" style={{ color: theme.primaryDark }}>Mensagem (opcional)</Label>
-                    <Textarea placeholder="Deixe uma mensagem para os noivos..." rows={3} style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                    <Textarea placeholder="Deixe uma mensagem para os noivos..." rows={3} value={rsvpMessage} onChange={(e) => setRsvpMessage(e.target.value)}
+                      style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
                   </div>
                   <button
-                    onClick={() => setRsvpSent(true)}
-                    className="w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                    onClick={handleRsvpSubmit}
+                    disabled={!rsvpName.trim() || addGuest.isPending}
+                    className="w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-50"
                     style={{ background: theme.primary, color: theme.primaryLight }}
                   >
-                    <Send className="w-4 h-4" /> Confirmar Presença
+                    <Send className="w-4 h-4" /> {addGuest.isPending ? "Enviando..." : "Confirmar Presença"}
                   </button>
                 </div>
               </ScrollSection>
@@ -436,7 +524,7 @@ const EventSite = () => {
       )}
 
       {/* GIFTS */}
-      {event.enabledSections.gifts && availableGifts.length > 0 && (
+      {sections.gifts && availableGifts.length > 0 && (
         <section className="py-24 px-6" style={{ background: theme.primaryDark }}>
           <div className="max-w-5xl mx-auto">
             <ScrollSection>
@@ -449,11 +537,19 @@ const EventSite = () => {
                   <div className="p-6 rounded-2xl text-center group cursor-pointer transition-all duration-300 hover:-translate-y-1"
                     style={{ background: `${theme.primaryLight}10`, border: `1px solid ${theme.primary}20` }}>
                     <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: `${theme.primary}20` }}>
-                      <Gift className="w-7 h-7" style={{ color: theme.primary }} />
+                      {gift.image_url ? (
+                        <img src={gift.image_url} alt={gift.name} className="w-full h-full object-cover rounded-2xl" />
+                      ) : (
+                        <Gift className="w-7 h-7" style={{ color: theme.primary }} />
+                      )}
                     </div>
                     <h4 className="font-semibold text-sm mb-1" style={{ color: theme.primaryLight }}>{gift.name}</h4>
-                    <p className="text-xs mb-3" style={{ color: `${theme.primaryLight}BB` }}>{gift.description}</p>
-                    <p className="text-xl font-bold mb-4" style={{ color: theme.primary }}>R$ {gift.value}</p>
+                    {gift.description && <p className="text-xs mb-3" style={{ color: `${theme.primaryLight}BB` }}>{gift.description}</p>}
+                    {gift.suggested_value && (
+                      <p className="text-xl font-bold mb-4" style={{ color: theme.primary }}>
+                        R$ {gift.suggested_value.toLocaleString("pt-BR")}
+                      </p>
+                    )}
                     <button className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"
                       style={{ background: theme.primary, color: theme.primaryDark }}>
                       Presentear
@@ -467,7 +563,7 @@ const EventSite = () => {
       )}
 
       {/* MURAL DE RECADOS */}
-      {event.enabledSections.wall && (
+      {sections.wall && (
         <section id="recados" className="py-24 px-6" style={{ background: theme.primaryLight }}>
           <div className="max-w-3xl mx-auto">
             <ScrollSection>
@@ -478,7 +574,6 @@ const EventSite = () => {
               </p>
             </ScrollSection>
 
-            {/* Message Form */}
             <ScrollSection delay={0.1}>
               <div className="p-6 rounded-2xl mb-8" style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}20` }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -501,7 +596,7 @@ const EventSite = () => {
                 />
                 <button
                   onClick={handleWallSubmit}
-                  disabled={!wallName.trim() || !wallMsg.trim()}
+                  disabled={!wallName.trim() || !wallMsg.trim() || addWallMessage.isPending}
                   className="px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none"
                   style={{ background: theme.primary, color: theme.primaryLight }}
                 >
@@ -510,9 +605,8 @@ const EventSite = () => {
               </div>
             </ScrollSection>
 
-            {/* Messages Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {wallMessages.map((msg, i) => (
+              {(wallMessages || []).map((msg, i) => (
                 <ScrollSection key={msg.id} delay={i * 0.08}>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -523,7 +617,9 @@ const EventSite = () => {
                     <p className="text-sm leading-relaxed mb-3" style={{ color: theme.primaryDark }}>"{msg.message}"</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold" style={{ color: theme.primary }}>— {msg.name}</span>
-                      <span className="text-xs" style={{ color: `${theme.primaryDark}66` }}>{msg.date}</span>
+                      <span className="text-xs" style={{ color: `${theme.primaryDark}66` }}>
+                        {msg.created_at ? new Date(msg.created_at).toLocaleDateString("pt-BR") : ""}
+                      </span>
                     </div>
                   </motion.div>
                 </ScrollSection>
@@ -534,22 +630,22 @@ const EventSite = () => {
       )}
 
       {/* Hosts message */}
-      {event.enabledSections.message && (
+      {sections.message && event.welcome_message && (
         <section className="py-20 px-6" style={{ background: theme.primaryDark }}>
           <ScrollSection>
             <div className="max-w-2xl mx-auto text-center">
               <Heart className="w-6 h-6 mx-auto mb-4" style={{ color: theme.primary }} />
               <p className="text-lg italic leading-relaxed" style={{ color: `${theme.primaryLight}CC` }}>
-                "{event.welcomeMessage}"
+                "{event.welcome_message}"
               </p>
-              <p className="text-sm mt-4" style={{ color: theme.primary }}>— {event.name}</p>
+              <p className="text-sm mt-4" style={{ color: theme.primary, fontFamily: titleFont }}>— {event.title}</p>
             </div>
           </ScrollSection>
         </section>
       )}
 
       {/* FOOTER */}
-      {event.enabledSections.footer && (
+      {sections.footer && (
         <footer className="py-8 px-6 text-center" style={{ background: theme.primaryDark, borderTop: `1px solid ${theme.primary}15` }}>
           <div className="max-w-md mx-auto mb-4">
             <button
@@ -561,7 +657,7 @@ const EventSite = () => {
               Compartilhar QR Code
             </button>
           </div>
-          <p className="text-sm mb-2" style={{ color: theme.primary }}>{event.name}</p>
+          <p className="text-sm mb-2" style={{ color: theme.primary, fontFamily: titleFont }}>{event.title}</p>
           <p className="text-xs" style={{ color: `${theme.primaryLight}44` }}>
             Site criado no{" "}
             <Link to="/" className="hover:underline" style={{ color: `${theme.primaryLight}66` }}>EventoSite</Link>

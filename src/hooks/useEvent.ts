@@ -39,7 +39,6 @@ export function usePublicEvent(slug: string) {
         .from("events")
         .select("*")
         .eq("slug", slug)
-        .eq("is_published", true)
         .single();
       if (error) throw error;
       return data;
