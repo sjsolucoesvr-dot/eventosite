@@ -63,6 +63,7 @@ const EventSite = () => {
   const [rsvpMessage, setRsvpMessage] = useState("");
   const heroRef = useRef<HTMLElement>(null);
 
+  useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
