@@ -9,6 +9,16 @@ import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import {
+  defaultSiteSections,
+  getReadableTextColor,
+  getSectionPalette,
+  resolveSectionColors,
+  resolveSiteSections,
+  resolveSiteTheme,
+  siteThemes,
+  withAlpha,
+} from "@/lib/site-customization";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import ColorPickerField from "@/components/dashboard/ColorPickerField";
@@ -20,15 +30,7 @@ import { toast } from "sonner";
 import { useUpdateEvent } from "@/hooks/useEvent";
 import type { EventRow } from "@/hooks/useEvent";
 
-const themes = [
-  { id: "classico", name: "Clássico Dourado", primary: "#C9A96E", secondary: "#1A1A2E", bg: "#FFFDF5" },
-  { id: "rosa", name: "Rosa Romance", primary: "#E8547A", secondary: "#F5C6D0", bg: "#FFF8F9" },
-  { id: "azul", name: "Azul Noite", primary: "#2C3E6B", secondary: "#A8C4E0", bg: "#F0F4FA" },
-  { id: "verde", name: "Verde Jardim", primary: "#3D8C40", secondary: "#A8D5A2", bg: "#F2FAF2" },
-  { id: "boho", name: "Boho Bege", primary: "#A0826D", secondary: "#D4C4B0", bg: "#FAF5EF" },
-  { id: "roxo", name: "Roxo Místico", primary: "#6B3FA0", secondary: "#C8A2E8", bg: "#F8F2FF" },
-  { id: "lilas", name: "Lilás Elegante", primary: "#9b75c1", secondary: "#72489b", bg: "#FFFFFF" },
-];
+const themes = siteThemes;
 
 const fonts = [
   { id: "playfair", name: "Playfair Display", family: "'Playfair Display', serif" },
@@ -98,7 +100,7 @@ const DashboardSite = ({ event }: Props) => {
 
   // Sections state
   const [enabledSections, setEnabledSections] = useState<Record<string, boolean>>(
-    Object.fromEntries(sectionsList.map((s) => [s.id, true]))
+    () => ({ ...defaultSiteSections })
   );
   const [sectionColorEditing, setSectionColorEditing] = useState<string | null>(null);
   const [sectionColors, setSectionColors] = useState<Record<string, { bg: string; text: string; accent: string }>>({});
@@ -121,12 +123,8 @@ const DashboardSite = ({ event }: Props) => {
     setSelectedBodyFont(event.font_body === "Glacial Indifference" ? "glacial" : event.font_body === "Raleway" ? "raleway" : event.font_body === "Cormorant Garamond" ? "cormorant" : "dm-sans");
     setPrimaryColor(event.color_primary || "#E8547A");
     setSecondaryColor(event.color_secondary || "#C9A96E");
-    if (event.sections && typeof event.sections === "object") {
-      setEnabledSections(event.sections as Record<string, boolean>);
-    }
-    if (event.section_colors && typeof event.section_colors === "object") {
-      setSectionColors(event.section_colors as Record<string, { bg: string; text: string; accent: string }>);
-    }
+    setEnabledSections(resolveSiteSections(event.sections));
+    setSectionColors(resolveSectionColors(event.section_colors) as Record<string, { bg: string; text: string; accent: string }>);
   }, [event]);
 
   if (!event) {
@@ -187,7 +185,11 @@ const DashboardSite = ({ event }: Props) => {
     }
   };
 
-  const currentTheme = themes.find((t) => t.id === selectedTheme) || themes[0];
+  const currentTheme = resolveSiteTheme({
+    theme: selectedTheme,
+    color_primary: primaryColor,
+    color_secondary: secondaryColor,
+  });
   const toggleSection = (id: string) =>
     setEnabledSections((prev) => ({ ...prev, [id]: !prev[id] }));
   const updateSectionColor = (sectionId: string, field: "bg" | "text" | "accent", value: string) => {
