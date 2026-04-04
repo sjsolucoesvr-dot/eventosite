@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePublicEvent, useGifts, useWallMessages, useAddWallMessage, useGalleryPhotos, useAddGuest } from "@/hooks/useEvent";
-import { resolveSiteTheme, resolveSiteSections, getReadableTextColor } from "@/lib/site-customization";
+import { resolveSiteTheme, resolveSiteSections, resolveSectionColors, getSectionPalette, getReadableTextColor, withAlpha } from "@/lib/site-customization";
 import { Heart, Calendar, MapPin, Users, ChevronDown, Send, Gift, Clock, ArrowUp, Music, MessageCircle, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds, format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { toast } from "sonner";
 
 const ScrollSection = ({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => {
@@ -54,7 +54,6 @@ const EventSite = () => {
   const [wallMsg, setWallMsg] = useState("");
   const [showQR, setShowQR] = useState(false);
 
-  // RSVP form state
   const [rsvpName, setRsvpName] = useState("");
   const [rsvpEmail, setRsvpEmail] = useState("");
   const [rsvpStatus, setRsvpStatus] = useState("sim");
@@ -100,16 +99,12 @@ const EventSite = () => {
     );
   }
 
-  // Resolve theme from DB using shared logic
   const resolvedTheme = resolveSiteTheme(event);
-  const theme = {
-    primary: resolvedTheme.primary,
-    primaryDark: resolvedTheme.secondary,
-    primaryLight: resolvedTheme.background,
-  };
-  const buttonTextColor = getReadableTextColor(theme.primary);
-
   const sections = resolveSiteSections(event.sections);
+  const sectionColors = resolveSectionColors(event.section_colors);
+
+  // Helper to get palette for each section
+  const palette = (id: string) => getSectionPalette(id, resolvedTheme, sectionColors);
 
   const eventDate = event.date ? parseISO(event.date) : new Date();
   const days = Math.max(0, differenceInDays(eventDate, now));
@@ -121,25 +116,21 @@ const EventSite = () => {
 
   const navLinks = [
     sections.story && { label: "Nossa História", href: "#historia" },
-    sections.gallery && { label: "Galeria", href: "#galeria" },
+    sections.gallery && galleryPhotos?.length && { label: "Galeria", href: "#galeria" },
     sections.info && { label: "Informações", href: "#informacoes" },
     sections.rsvp && { label: "Confirmar Presença", href: "#rsvp" },
     sections.wall && { label: "Recados", href: "#recados" },
   ].filter(Boolean) as { label: string; href: string }[];
 
   const siteUrl = `${window.location.origin}/evento/${event.slug}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(siteUrl)}&color=${theme.primary.replace("#", "")}&bgcolor=${theme.primaryLight.replace("#", "")}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(siteUrl)}&color=${resolvedTheme.primary.replace("#", "")}&bgcolor=${resolvedTheme.background.replace("#", "")}`;
 
   const titleFont = event.font_title || "Boston Angel";
   const bodyFont = event.font_body || "Glacial Indifference";
 
   const handleWallSubmit = () => {
     if (wallName.trim() && wallMsg.trim() && event.id) {
-      addWallMessage.mutate({
-        event_id: event.id,
-        name: wallName.trim(),
-        message: wallMsg.trim(),
-      });
+      addWallMessage.mutate({ event_id: event.id, name: wallName.trim(), message: wallMsg.trim() });
       setWallName("");
       setWallMsg("");
       toast.success("Recado enviado!");
@@ -164,19 +155,22 @@ const EventSite = () => {
     });
   };
 
-  const defaultGalleryPhotos = [
-    "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&q=75",
-    "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=75",
-    "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&q=75",
-    "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&q=75",
-    "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&q=75",
-    "https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=75",
-  ];
+  const photos = galleryPhotos?.length ? galleryPhotos.map(p => p.url) : [];
 
-  const photos = galleryPhotos?.length ? galleryPhotos.map(p => p.url) : defaultGalleryPhotos;
+  // Section palettes
+  const heroPal = palette("hero");
+  const storyPal = palette("story");
+  const galleryPal = palette("gallery");
+  const infoPal = palette("info");
+  const playlistPal = palette("playlist");
+  const rsvpPal = palette("rsvp");
+  const giftsPal = palette("gifts");
+  const wallPal = palette("wall");
+  const messagePal = palette("message");
+  const footerPal = palette("footer");
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: bodyFont, background: theme.primaryLight }}>
+    <div className="min-h-screen" style={{ fontFamily: bodyFont, background: resolvedTheme.background }}>
       {/* Navbar */}
       <motion.nav
         initial={{ y: 0 }}
@@ -184,21 +178,21 @@ const EventSite = () => {
         transition={{ duration: 0.3 }}
         className="fixed top-0 left-0 right-0 z-50"
         style={{
-          background: `${theme.primaryDark}CC`,
+          background: `${resolvedTheme.secondary}CC`,
           backdropFilter: "blur(16px)",
-          borderBottom: `1px solid ${theme.primary}20`,
+          borderBottom: `1px solid ${resolvedTheme.primary}20`,
         }}
       >
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-semibold text-sm" style={{ color: theme.primary, fontFamily: titleFont }}>{event.title}</span>
+          <span className="font-semibold text-sm" style={{ color: resolvedTheme.primary, fontFamily: titleFont }}>{event.title}</span>
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="text-xs font-medium transition-colors duration-200 hover:opacity-100 opacity-70" style={{ color: theme.primaryLight }}>
+              <a key={link.href} href={link.href} className="text-xs font-medium transition-colors duration-200 hover:opacity-100 opacity-70" style={{ color: resolvedTheme.background }}>
                 {link.label}
               </a>
             ))}
             <button onClick={() => setShowQR(!showQR)} className="opacity-70 hover:opacity-100 transition-opacity" title="QR Code">
-              <QrCode className="w-4 h-4" style={{ color: theme.primaryLight }} />
+              <QrCode className="w-4 h-4" style={{ color: resolvedTheme.background }} />
             </button>
           </div>
         </div>
@@ -216,21 +210,21 @@ const EventSite = () => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="rounded-3xl p-8 text-center max-w-sm mx-4"
-            style={{ background: theme.primaryLight }}
+            style={{ background: resolvedTheme.background }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-2" style={{ color: theme.primaryDark }}>Compartilhe o site</h3>
-            <p className="text-sm mb-6" style={{ color: `${theme.primaryDark}99` }}>
+            <h3 className="text-xl font-bold mb-2" style={{ color: resolvedTheme.secondary }}>Compartilhe o site</h3>
+            <p className="text-sm mb-6" style={{ color: `${resolvedTheme.secondary}99` }}>
               Escaneie o QR Code para acessar o site do evento
             </p>
             <img src={qrUrl} alt="QR Code do evento" className="mx-auto rounded-2xl mb-4" width={200} height={200} />
-            <p className="text-xs font-mono px-4 py-2 rounded-xl mb-4" style={{ background: `${theme.primaryDark}08`, color: theme.primaryDark }}>
+            <p className="text-xs font-mono px-4 py-2 rounded-xl mb-4" style={{ background: `${resolvedTheme.secondary}08`, color: resolvedTheme.secondary }}>
               {siteUrl}
             </p>
             <button
               onClick={() => { navigator.clipboard.writeText(siteUrl); toast.success("Link copiado!"); }}
               className="px-6 py-2 rounded-full text-sm font-medium"
-              style={{ background: theme.primary, color: theme.primaryLight }}
+              style={{ background: resolvedTheme.primary, color: getReadableTextColor(resolvedTheme.primary) }}
             >
               Copiar link
             </button>
@@ -240,54 +234,60 @@ const EventSite = () => {
 
       {/* HERO */}
       {sections.hero && (
-        <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url('${event.hero_image_url || "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80"}')`,
-            }}
-          />
-          <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${theme.primaryDark}99, ${theme.primaryDark}DD)` }} />
+        <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden"
+          style={{ background: heroPal.bg }}>
+          {/* Only show cover image if user actually uploaded one */}
+          {event.hero_image_url && (
+            <>
+              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${event.hero_image_url}')` }} />
+              <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${heroPal.bg}99, ${heroPal.bg}DD)` }} />
+            </>
+          )}
+          {/* If no cover image, use a subtle gradient */}
+          {!event.hero_image_url && (
+            <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${heroPal.bg}, ${withAlpha(heroPal.accent, "22")})` }} />
+          )}
+
           <motion.div className="relative z-10 text-center space-y-6 px-6">
             <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ duration: 0.8, delay: 0.3 }}>
               <svg className="w-14 h-14 mx-auto" viewBox="0 0 56 56" fill="none">
-                <path d="M28 48s-18-12-18-24a10 10 0 0 1 18-6 10 10 0 0 1 18 6c0 12-18 24-18 24z" fill={theme.primary} opacity="0.3" />
-                <path d="M28 44s-14-10-14-20a8 8 0 0 1 14-5 8 8 0 0 1 14 5c0 10-14 20-14 20z" fill={theme.primary} opacity="0.7" />
+                <path d="M28 48s-18-12-18-24a10 10 0 0 1 18-6 10 10 0 0 1 18 6c0 12-18 24-18 24z" fill={heroPal.accent} opacity="0.3" />
+                <path d="M28 44s-14-10-14-20a8 8 0 0 1 14-5 8 8 0 0 1 14 5c0 10-14 20-14 20z" fill={heroPal.accent} opacity="0.7" />
               </svg>
             </motion.div>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-              className="text-xs uppercase tracking-[0.3em] font-medium" style={{ color: `${theme.primary}CC` }}>
+              className="text-xs uppercase tracking-[0.3em] font-medium" style={{ color: `${heroPal.accent}CC` }}>
               Convidam para o {event.type || "casamento"}
             </motion.p>
 
+            {/* Title uses PRIMARY (accent) color — matching the editor preview */}
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
-              className="text-5xl md:text-7xl font-bold leading-tight" style={{ color: theme.primaryLight, fontFamily: titleFont }}>
+              className="text-5xl md:text-7xl font-bold leading-tight" style={{ color: heroPal.accent, fontFamily: titleFont }}>
               {event.title}
             </motion.h1>
 
             {event.subtitle && (
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
-                className="text-lg italic" style={{ color: `${theme.primaryLight}BB` }}>
+                className="text-lg italic" style={{ color: `${heroPal.text}BB` }}>
                 "{event.subtitle}"
               </motion.p>
             )}
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}
-              className="flex items-center justify-center gap-6 text-sm" style={{ color: `${theme.primaryLight}CC` }}>
+              className="flex items-center justify-center gap-6 text-sm" style={{ color: `${heroPal.text}CC` }}>
               <span className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" style={{ color: theme.primary }} />
+                <Calendar className="w-4 h-4" style={{ color: heroPal.accent }} />
                 {format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </span>
               {event.location && (
                 <span className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" style={{ color: theme.primary }} />
+                  <MapPin className="w-4 h-4" style={{ color: heroPal.accent }} />
                   {event.location}
                 </span>
               )}
             </motion.div>
 
-            {/* Countdown */}
             {sections.countdown && (
               <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.3 }}
                 className="flex justify-center gap-4 pt-4">
@@ -299,10 +299,10 @@ const EventSite = () => {
                 ].map((item) => (
                   <div key={item.label} className="text-center">
                     <div className="text-3xl font-bold rounded-xl w-18 h-18 flex items-center justify-center px-4 py-3"
-                      style={{ background: `${theme.primary}20`, color: theme.primaryLight }}>
+                      style={{ background: `${heroPal.accent}20`, color: heroPal.text }}>
                       {String(item.value).padStart(2, "0")}
                     </div>
-                    <span className="text-xs mt-1 block" style={{ color: `${theme.primaryLight}88` }}>{item.label}</span>
+                    <span className="text-xs mt-1 block" style={{ color: `${heroPal.text}88` }}>{item.label}</span>
                   </div>
                 ))}
               </motion.div>
@@ -311,7 +311,7 @@ const EventSite = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
               <a href="#rsvp">
                 <button className="mt-4 px-8 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ background: theme.primary, color: buttonTextColor }}>
+                  style={{ background: heroPal.accent, color: getReadableTextColor(heroPal.accent) }}>
                   Confirmar Presença
                 </button>
               </a>
@@ -321,7 +321,7 @@ const EventSite = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
             className="absolute bottom-8 left-1/2 -translate-x-1/2">
             <motion.div animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-              <ChevronDown className="w-6 h-6" style={{ color: `${theme.primaryLight}66` }} />
+              <ChevronDown className="w-6 h-6" style={{ color: `${heroPal.text}66` }} />
             </motion.div>
           </motion.div>
         </section>
@@ -329,12 +329,12 @@ const EventSite = () => {
 
       {/* OUR STORY */}
       {sections.story && event.story && (
-        <section id="historia" className="py-24 px-6" style={{ background: theme.primaryLight }}>
+        <section id="historia" className="py-24 px-6" style={{ background: storyPal.bg }}>
           <div className="max-w-3xl mx-auto text-center">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] mb-4 font-semibold" style={{ color: theme.primary }}>Nossa História</p>
-              <SectionDivider color={theme.primary} />
-              <p className="text-base leading-loose" style={{ color: theme.primaryDark }}>
+              <p className="text-xs uppercase tracking-[0.25em] mb-4 font-semibold" style={{ color: storyPal.accent }}>Nossa História</p>
+              <SectionDivider color={storyPal.accent} />
+              <p className="text-base leading-loose" style={{ color: storyPal.text }}>
                 {event.story}
               </p>
             </ScrollSection>
@@ -342,13 +342,13 @@ const EventSite = () => {
         </section>
       )}
 
-      {/* GALLERY */}
-      {sections.gallery && (
-        <section id="galeria" className="py-24 px-6" style={{ background: theme.primaryDark }}>
+      {/* GALLERY — only if user has uploaded photos */}
+      {sections.gallery && photos.length > 0 && (
+        <section id="galeria" className="py-24 px-6" style={{ background: galleryPal.bg }}>
           <div className="max-w-5xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Galeria</p>
-              <SectionDivider color={theme.primary} />
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: galleryPal.accent }}>Galeria</p>
+              <SectionDivider color={galleryPal.accent} />
             </ScrollSection>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {photos.map((url, i) => (
@@ -365,11 +365,11 @@ const EventSite = () => {
 
       {/* EVENT INFO */}
       {sections.info && (
-        <section id="informacoes" className="py-24 px-6" style={{ background: theme.primaryLight }}>
+        <section id="informacoes" className="py-24 px-6" style={{ background: infoPal.bg }}>
           <div className="max-w-4xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Informações</p>
-              <SectionDivider color={theme.primary} />
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: infoPal.accent }}>Informações</p>
+              <SectionDivider color={infoPal.accent} />
             </ScrollSection>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
@@ -379,10 +379,10 @@ const EventSite = () => {
                 { icon: Clock, title: "Horário", info: event.time ? `${event.time}h` : "A definir" },
               ].map((card, i) => (
                 <ScrollSection key={i} delay={i * 0.1}>
-                  <div className="text-center p-6 rounded-2xl" style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}20` }}>
-                    <card.icon className="w-6 h-6 mx-auto mb-3" style={{ color: theme.primary }} />
-                    <h4 className="text-sm font-semibold mb-2" style={{ color: theme.primaryDark }}>{card.title}</h4>
-                    <p className="text-xs whitespace-pre-line" style={{ color: `${theme.primaryDark}BB` }}>{card.info}</p>
+                  <div className="text-center p-6 rounded-2xl" style={{ background: `${infoPal.text}08`, border: `1px solid ${infoPal.accent}20` }}>
+                    <card.icon className="w-6 h-6 mx-auto mb-3" style={{ color: infoPal.accent }} />
+                    <h4 className="text-sm font-semibold mb-2" style={{ color: infoPal.text }}>{card.title}</h4>
+                    <p className="text-xs whitespace-pre-line" style={{ color: `${infoPal.text}BB` }}>{card.info}</p>
                   </div>
                 </ScrollSection>
               ))}
@@ -391,12 +391,12 @@ const EventSite = () => {
             {sections.location && event.location && (
               <ScrollSection delay={0.3}>
                 <div className="mt-8 rounded-2xl overflow-hidden h-64 flex items-center justify-center"
-                  style={{ background: `${theme.primaryDark}08`, border: `1px solid ${theme.primary}20` }}>
+                  style={{ background: `${infoPal.text}08`, border: `1px solid ${infoPal.accent}20` }}>
                   <div className="text-center">
-                    <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: `${theme.primary}80` }} />
-                    <p className="text-sm" style={{ color: theme.primaryDark }}>{event.location}</p>
+                    <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: `${infoPal.accent}80` }} />
+                    <p className="text-sm" style={{ color: infoPal.text }}>{event.location}</p>
                     {event.location_address && (
-                      <p className="text-xs mt-1" style={{ color: `${theme.primaryDark}99` }}>{event.location_address}</p>
+                      <p className="text-xs mt-1" style={{ color: `${infoPal.text}99` }}>{event.location_address}</p>
                     )}
                   </div>
                 </div>
@@ -408,17 +408,17 @@ const EventSite = () => {
 
       {/* PLAYLIST */}
       {sections.playlist && event.spotify_playlist_url && (
-        <section className="py-24 px-6" style={{ background: theme.primaryDark }}>
+        <section className="py-24 px-6" style={{ background: playlistPal.bg }}>
           <div className="max-w-3xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Nossa Playlist</p>
-              <SectionDivider color={theme.primary} />
-              <p className="text-center text-sm mb-8" style={{ color: `${theme.primaryLight}BB` }}>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: playlistPal.accent }}>Nossa Playlist</p>
+              <SectionDivider color={playlistPal.accent} />
+              <p className="text-center text-sm mb-8" style={{ color: `${playlistPal.text}BB` }}>
                 As músicas que marcam nossa história e que vão embalar nossa festa 🎶
               </p>
             </ScrollSection>
             <ScrollSection delay={0.2}>
-              <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${theme.primary}20` }}>
+              <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${playlistPal.accent}20` }}>
                 <iframe
                   src={event.spotify_playlist_url}
                   width="100%"
@@ -427,7 +427,7 @@ const EventSite = () => {
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   loading="lazy"
                   className="rounded-2xl"
-                  style={{ background: theme.primaryDark }}
+                  style={{ background: playlistPal.bg }}
                 />
               </div>
             </ScrollSection>
@@ -437,12 +437,12 @@ const EventSite = () => {
 
       {/* RSVP */}
       {sections.rsvp && (
-        <section id="rsvp" className="py-24 px-6" style={{ background: theme.primaryLight }}>
+        <section id="rsvp" className="py-24 px-6" style={{ background: rsvpPal.bg }}>
           <div className="max-w-lg mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Confirmar Presença</p>
-              <SectionDivider color={theme.primary} />
-              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: theme.primaryDark, fontFamily: titleFont }}>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: rsvpPal.accent }}>Confirmar Presença</p>
+              <SectionDivider color={rsvpPal.accent} />
+              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: rsvpPal.text, fontFamily: titleFont }}>
                 Será uma honra ter você conosco
               </h2>
             </ScrollSection>
@@ -453,32 +453,32 @@ const EventSite = () => {
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                  className="text-center p-8 rounded-2xl" style={{ background: `${theme.primary}15` }}
+                  className="text-center p-8 rounded-2xl" style={{ background: `${rsvpPal.accent}15` }}
                 >
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }}>
-                    <Heart className="w-12 h-12 mx-auto mb-4" style={{ color: theme.primary }} />
+                    <Heart className="w-12 h-12 mx-auto mb-4" style={{ color: rsvpPal.accent }} />
                   </motion.div>
-                  <h3 className="text-xl font-bold mb-2" style={{ color: theme.primaryDark }}>Obrigado!</h3>
-                  <p className="text-sm" style={{ color: `${theme.primaryDark}BB` }}>Sua confirmação foi recebida com sucesso.</p>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: rsvpPal.text }}>Obrigado!</h3>
+                  <p className="text-sm" style={{ color: `${rsvpPal.text}BB` }}>Sua confirmação foi recebida com sucesso.</p>
                 </motion.div>
               </ScrollSection>
             ) : (
               <ScrollSection delay={0.2}>
-                <div className="space-y-4 p-6 rounded-2xl" style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}20` }}>
+                <div className="space-y-4 p-6 rounded-2xl" style={{ background: `${rsvpPal.text}06`, border: `1px solid ${rsvpPal.accent}20` }}>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Nome completo</Label>
+                    <Label className="text-sm" style={{ color: rsvpPal.text }}>Nome completo</Label>
                     <Input placeholder="Seu nome" className="h-11" value={rsvpName} onChange={(e) => setRsvpName(e.target.value)}
-                      style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                      style={{ borderColor: `${rsvpPal.accent}30`, background: rsvpPal.bg }} />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Email</Label>
+                    <Label className="text-sm" style={{ color: rsvpPal.text }}>Email</Label>
                     <Input type="email" placeholder="seu@email.com" className="h-11" value={rsvpEmail} onChange={(e) => setRsvpEmail(e.target.value)}
-                      style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                      style={{ borderColor: `${rsvpPal.accent}30`, background: rsvpPal.bg }} />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Confirmação</Label>
+                    <Label className="text-sm" style={{ color: rsvpPal.text }}>Confirmação</Label>
                     <Select value={rsvpStatus} onValueChange={setRsvpStatus}>
-                      <SelectTrigger className="h-11" style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }}>
+                      <SelectTrigger className="h-11" style={{ borderColor: `${rsvpPal.accent}30`, background: rsvpPal.bg }}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -490,26 +490,26 @@ const EventSite = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label className="text-sm" style={{ color: theme.primaryDark }}>Nº acompanhantes</Label>
+                      <Label className="text-sm" style={{ color: rsvpPal.text }}>Nº acompanhantes</Label>
                       <Input type="number" value={rsvpCompanions} onChange={(e) => setRsvpCompanions(e.target.value)} min="0" max="5" className="h-11"
-                        style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                        style={{ borderColor: `${rsvpPal.accent}30`, background: rsvpPal.bg }} />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-sm" style={{ color: theme.primaryDark }}>Restrição alimentar</Label>
+                      <Label className="text-sm" style={{ color: rsvpPal.text }}>Restrição alimentar</Label>
                       <Input placeholder="Ex: Vegetariano" className="h-11" value={rsvpDietary} onChange={(e) => setRsvpDietary(e.target.value)}
-                        style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                        style={{ borderColor: `${rsvpPal.accent}30`, background: rsvpPal.bg }} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm" style={{ color: theme.primaryDark }}>Mensagem (opcional)</Label>
+                    <Label className="text-sm" style={{ color: rsvpPal.text }}>Mensagem (opcional)</Label>
                     <Textarea placeholder="Deixe uma mensagem para os noivos..." rows={3} value={rsvpMessage} onChange={(e) => setRsvpMessage(e.target.value)}
-                      style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }} />
+                      style={{ borderColor: `${rsvpPal.accent}30`, background: rsvpPal.bg }} />
                   </div>
                   <button
                     onClick={handleRsvpSubmit}
                     disabled={!rsvpName.trim() || addGuest.isPending}
                     className="w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-50"
-                    style={{ background: theme.primary, color: theme.primaryLight }}
+                    style={{ background: rsvpPal.accent, color: getReadableTextColor(rsvpPal.accent) }}
                   >
                     <Send className="w-4 h-4" /> {addGuest.isPending ? "Enviando..." : "Confirmar Presença"}
                   </button>
@@ -522,33 +522,33 @@ const EventSite = () => {
 
       {/* GIFTS */}
       {sections.gifts && availableGifts.length > 0 && (
-        <section className="py-24 px-6" style={{ background: theme.primaryDark }}>
+        <section className="py-24 px-6" style={{ background: giftsPal.bg }}>
           <div className="max-w-5xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Lista de Presentes</p>
-              <SectionDivider color={theme.primary} />
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: giftsPal.accent }}>Lista de Presentes</p>
+              <SectionDivider color={giftsPal.accent} />
             </ScrollSection>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {availableGifts.map((gift, i) => (
                 <ScrollSection key={gift.id} delay={i * 0.08}>
                   <div className="p-6 rounded-2xl text-center group cursor-pointer transition-all duration-300 hover:-translate-y-1"
-                    style={{ background: `${theme.primaryLight}10`, border: `1px solid ${theme.primary}20` }}>
-                    <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: `${theme.primary}20` }}>
+                    style={{ background: `${giftsPal.text}10`, border: `1px solid ${giftsPal.accent}20` }}>
+                    <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: `${giftsPal.accent}20` }}>
                       {gift.image_url ? (
                         <img src={gift.image_url} alt={gift.name} className="w-full h-full object-cover rounded-2xl" />
                       ) : (
-                        <Gift className="w-7 h-7" style={{ color: theme.primary }} />
+                        <Gift className="w-7 h-7" style={{ color: giftsPal.accent }} />
                       )}
                     </div>
-                    <h4 className="font-semibold text-sm mb-1" style={{ color: theme.primaryLight }}>{gift.name}</h4>
-                    {gift.description && <p className="text-xs mb-3" style={{ color: `${theme.primaryLight}BB` }}>{gift.description}</p>}
+                    <h4 className="font-semibold text-sm mb-1" style={{ color: giftsPal.text }}>{gift.name}</h4>
+                    {gift.description && <p className="text-xs mb-3" style={{ color: `${giftsPal.text}BB` }}>{gift.description}</p>}
                     {gift.suggested_value && (
-                      <p className="text-xl font-bold mb-4" style={{ color: theme.primary }}>
+                      <p className="text-xl font-bold mb-4" style={{ color: giftsPal.accent }}>
                         R$ {gift.suggested_value.toLocaleString("pt-BR")}
                       </p>
                     )}
                     <button className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"
-                      style={{ background: theme.primary, color: buttonTextColor }}>
+                      style={{ background: giftsPal.accent, color: getReadableTextColor(giftsPal.accent) }}>
                       Presentear
                     </button>
                   </div>
@@ -561,41 +561,30 @@ const EventSite = () => {
 
       {/* MURAL DE RECADOS */}
       {sections.wall && (
-        <section id="recados" className="py-24 px-6" style={{ background: theme.primaryLight }}>
+        <section id="recados" className="py-24 px-6" style={{ background: wallPal.bg }}>
           <div className="max-w-3xl mx-auto">
             <ScrollSection>
-              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: theme.primary }}>Mural de Recados</p>
-              <SectionDivider color={theme.primary} />
-              <p className="text-center text-sm mb-8" style={{ color: `${theme.primaryDark}BB` }}>
+              <p className="text-xs uppercase tracking-[0.25em] text-center mb-4 font-semibold" style={{ color: wallPal.accent }}>Mural de Recados</p>
+              <SectionDivider color={wallPal.accent} />
+              <p className="text-center text-sm mb-8" style={{ color: `${wallPal.text}BB` }}>
                 Deixe uma mensagem carinhosa para os noivos 💌
               </p>
             </ScrollSection>
 
             <ScrollSection delay={0.1}>
-              <div className="p-6 rounded-2xl mb-8" style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}20` }}>
+              <div className="p-6 rounded-2xl mb-8" style={{ background: `${wallPal.text}06`, border: `1px solid ${wallPal.accent}20` }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                  <Input
-                    placeholder="Seu nome"
-                    value={wallName}
-                    onChange={(e) => setWallName(e.target.value)}
-                    className="h-11"
-                    style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }}
-                  />
+                  <Input placeholder="Seu nome" value={wallName} onChange={(e) => setWallName(e.target.value)} className="h-11"
+                    style={{ borderColor: `${wallPal.accent}30`, background: wallPal.bg }} />
                   <div />
                 </div>
-                <Textarea
-                  placeholder="Escreva sua mensagem..."
-                  value={wallMsg}
-                  onChange={(e) => setWallMsg(e.target.value)}
-                  rows={3}
-                  className="mb-3"
-                  style={{ borderColor: `${theme.primary}30`, background: theme.primaryLight }}
-                />
+                <Textarea placeholder="Escreva sua mensagem..." value={wallMsg} onChange={(e) => setWallMsg(e.target.value)} rows={3} className="mb-3"
+                  style={{ borderColor: `${wallPal.accent}30`, background: wallPal.bg }} />
                 <button
                   onClick={handleWallSubmit}
                   disabled={!wallName.trim() || !wallMsg.trim() || addWallMessage.isPending}
                   className="px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none"
-                  style={{ background: theme.primary, color: theme.primaryLight }}
+                  style={{ background: wallPal.accent, color: getReadableTextColor(wallPal.accent) }}
                 >
                   <MessageCircle className="w-4 h-4" /> Enviar Recado
                 </button>
@@ -609,12 +598,12 @@ const EventSite = () => {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="p-5 rounded-2xl"
-                    style={{ background: `${theme.primaryDark}06`, border: `1px solid ${theme.primary}15` }}
+                    style={{ background: `${wallPal.text}06`, border: `1px solid ${wallPal.accent}15` }}
                   >
-                    <p className="text-sm leading-relaxed mb-3" style={{ color: theme.primaryDark }}>"{msg.message}"</p>
+                    <p className="text-sm leading-relaxed mb-3" style={{ color: wallPal.text }}>"{msg.message}"</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold" style={{ color: theme.primary }}>— {msg.name}</span>
-                      <span className="text-xs" style={{ color: `${theme.primaryDark}66` }}>
+                      <span className="text-xs font-semibold" style={{ color: wallPal.accent }}>— {msg.name}</span>
+                      <span className="text-xs" style={{ color: `${wallPal.text}66` }}>
                         {msg.created_at ? new Date(msg.created_at).toLocaleDateString("pt-BR") : ""}
                       </span>
                     </div>
@@ -628,14 +617,14 @@ const EventSite = () => {
 
       {/* Hosts message */}
       {sections.message && event.welcome_message && (
-        <section className="py-20 px-6" style={{ background: theme.primaryDark }}>
+        <section className="py-20 px-6" style={{ background: messagePal.bg }}>
           <ScrollSection>
             <div className="max-w-2xl mx-auto text-center">
-              <Heart className="w-6 h-6 mx-auto mb-4" style={{ color: theme.primary }} />
-              <p className="text-lg italic leading-relaxed" style={{ color: `${theme.primaryLight}CC` }}>
+              <Heart className="w-6 h-6 mx-auto mb-4" style={{ color: messagePal.accent }} />
+              <p className="text-lg italic leading-relaxed" style={{ color: `${messagePal.text}CC` }}>
                 "{event.welcome_message}"
               </p>
-              <p className="text-sm mt-4" style={{ color: theme.primary, fontFamily: titleFont }}>— {event.title}</p>
+              <p className="text-sm mt-4" style={{ color: messagePal.accent, fontFamily: titleFont }}>— {event.title}</p>
             </div>
           </ScrollSection>
         </section>
@@ -643,21 +632,21 @@ const EventSite = () => {
 
       {/* FOOTER */}
       {sections.footer && (
-        <footer className="py-8 px-6 text-center" style={{ background: theme.primaryDark, borderTop: `1px solid ${theme.primary}15` }}>
+        <footer className="py-8 px-6 text-center" style={{ background: footerPal.bg, borderTop: `1px solid ${footerPal.accent}15` }}>
           <div className="max-w-md mx-auto mb-4">
             <button
               onClick={() => setShowQR(true)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs transition-all hover:opacity-80"
-              style={{ background: `${theme.primary}15`, color: theme.primary }}
+              style={{ background: `${footerPal.accent}15`, color: footerPal.accent }}
             >
               <QrCode className="w-3.5 h-3.5" />
               Compartilhar QR Code
             </button>
           </div>
-          <p className="text-sm mb-2" style={{ color: theme.primary, fontFamily: titleFont }}>{event.title}</p>
-          <p className="text-xs" style={{ color: `${theme.primaryLight}44` }}>
+          <p className="text-sm mb-2" style={{ color: footerPal.accent, fontFamily: titleFont }}>{event.title}</p>
+          <p className="text-xs" style={{ color: `${footerPal.text}44` }}>
             Site criado no{" "}
-            <Link to="/" className="hover:underline" style={{ color: `${theme.primaryLight}66` }}>EventoSite</Link>
+            <Link to="/" className="hover:underline" style={{ color: `${footerPal.text}66` }}>EventoSite</Link>
           </p>
         </footer>
       )}
@@ -668,7 +657,7 @@ const EventSite = () => {
         animate={{ opacity: showBackToTop ? 1 : 0, scale: showBackToTop ? 1 : 0 }}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
-        style={{ background: theme.primary, color: buttonTextColor }}
+        style={{ background: resolvedTheme.primary, color: getReadableTextColor(resolvedTheme.primary) }}
       >
         <ArrowUp className="w-4 h-4" />
       </motion.button>
