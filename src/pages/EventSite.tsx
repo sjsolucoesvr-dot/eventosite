@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePublicEvent, useGifts, useWallMessages, useAddWallMessage, useGalleryPhotos, useAddGuest } from "@/hooks/useEvent";
-import { eventThemes } from "@/stores/eventStore";
+import { resolveSiteTheme, resolveSiteSections, getReadableTextColor } from "@/lib/site-customization";
 import { Heart, Calendar, MapPin, Users, ChevronDown, Send, Gift, Clock, ArrowUp, Music, MessageCircle, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
