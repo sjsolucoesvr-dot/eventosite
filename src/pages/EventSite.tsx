@@ -107,6 +107,7 @@ const EventSite = () => {
     primaryDark: resolvedTheme.secondary,
     primaryLight: resolvedTheme.background,
   };
+  const buttonTextColor = getReadableTextColor(theme.primary);
 
   const sections = resolveSiteSections(event.sections);
 
