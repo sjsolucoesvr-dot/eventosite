@@ -100,19 +100,15 @@ const EventSite = () => {
     );
   }
 
-  // Resolve theme from DB
-  const dbTheme = eventThemes.find((t) => t.id === event.theme) || eventThemes[0];
+  // Resolve theme from DB using shared logic
+  const resolvedTheme = resolveSiteTheme(event);
   const theme = {
-    primaryDark: dbTheme.primaryDark,
-    primary: event.color_primary || dbTheme.primary,
-    primaryLight: event.color_secondary || dbTheme.primaryLight,
+    primary: resolvedTheme.primary,
+    primaryDark: resolvedTheme.secondary,
+    primaryLight: resolvedTheme.background,
   };
 
-  const sections = (event.sections as Record<string, boolean>) || {
-    hero: true, countdown: true, story: true, gallery: true, info: true,
-    rsvp: true, gifts: true, location: true, message: true, footer: true,
-    playlist: true, wall: true,
-  };
+  const sections = resolveSiteSections(event.sections);
 
   const eventDate = event.date ? parseISO(event.date) : new Date();
   const days = Math.max(0, differenceInDays(eventDate, now));
