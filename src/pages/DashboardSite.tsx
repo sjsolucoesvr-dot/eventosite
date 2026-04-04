@@ -506,11 +506,11 @@ const DashboardSite = ({ event }: Props) => {
         <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
           {previewMode === "mobile" ? (
             <div className="relative">
-              <div className="relative w-[390px] rounded-[3rem] border-[12px] border-foreground/90 bg-foreground/90 shadow-2xl overflow-hidden">
+              <div className="relative w-[390px] h-[780px] rounded-[3rem] border-[12px] border-foreground/90 bg-foreground/90 shadow-2xl overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-foreground/90 rounded-b-2xl z-10" />
-                <div className="rounded-[2.2rem] overflow-hidden bg-card" style={{ backgroundColor: currentTheme.background }}>
+                <div className="rounded-[2.2rem] overflow-y-auto h-full bg-card" style={{ backgroundColor: currentTheme.background }}>
                   <div className="pt-7">
-                    <PreviewContent currentTheme={{ ...currentTheme, bg: currentTheme.background }} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
+                    <PreviewContent primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} story={story} eventLocation={eventLocation} enabledSections={enabledSections} sectionColors={sectionColors} bgColor={currentTheme.background} />
                   </div>
                 </div>
               </div>
@@ -518,7 +518,7 @@ const DashboardSite = ({ event }: Props) => {
             </div>
           ) : (
             <div className="w-full max-w-3xl bg-card rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden" style={{ backgroundColor: currentTheme.background }}>
-              <PreviewContent currentTheme={{ ...currentTheme, bg: currentTheme.background }} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
+              <PreviewContent primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} story={story} eventLocation={eventLocation} enabledSections={enabledSections} sectionColors={sectionColors} bgColor={currentTheme.background} />
             </div>
           )}
         </div>
@@ -528,7 +528,6 @@ const DashboardSite = ({ event }: Props) => {
 };
 
 interface PreviewContentProps {
-  currentTheme: typeof themes[0];
   primaryColor: string;
   secondaryColor: string;
   selectedFont: string;
@@ -536,77 +535,175 @@ interface PreviewContentProps {
   eventName: string;
   eventDate: Date | undefined;
   welcomeMessage: string;
+  story: string;
+  eventLocation: string;
   enabledSections: Record<string, boolean>;
+  sectionColors: Record<string, { bg: string; text: string; accent: string }>;
+  bgColor: string;
 }
 
-const PreviewContent = ({ currentTheme, primaryColor, secondaryColor, selectedFont, selectedBodyFont, eventName, eventDate, welcomeMessage, enabledSections }: PreviewContentProps) => {
+const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBodyFont, eventName, eventDate, welcomeMessage, story, eventLocation, enabledSections, sectionColors, bgColor }: PreviewContentProps) => {
   const bodyFamily = bodyFonts.find((f) => f.id === selectedBodyFont)?.family || "'DM Sans', sans-serif";
+  const titleFamily = fonts.find((f) => f.id === selectedFont)?.family || "'Playfair Display', serif";
+
+  // Use same palette logic as public site
+  const resolvedTheme = { id: "", name: "", primary: primaryColor, secondary: secondaryColor, background: bgColor };
+  const pal = (id: string) => getSectionPalette(id, resolvedTheme, sectionColors);
+
+  const heroPal = pal("hero");
+  const storyPal = pal("story");
+  const infoPal = pal("info");
+  const galleryPal = pal("gallery");
+  const playlistPal = pal("playlist");
+  const rsvpPal = pal("rsvp");
+  const giftsPal = pal("gifts");
+  const wallPal = pal("wall");
+  const messagePal = pal("message");
+  const footerPal = pal("footer");
 
   return (
     <div style={{ fontFamily: bodyFamily }}>
-      <div className="relative h-64 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primaryColor}22, ${secondaryColor}22)` }}>
-        <Heart className="absolute top-4 left-1/2 -translate-x-1/2 w-6 h-6" style={{ color: primaryColor }} />
-        <div className="text-center mt-6">
-          <h2 className="text-3xl font-semibold tracking-tight" style={{ color: currentTheme.primary, fontFamily: fonts.find((f) => f.id === selectedFont)?.family }}>
+      {/* Hero */}
+      {enabledSections.hero !== false && (
+        <div className="relative py-16 px-6 flex flex-col items-center justify-center text-center"
+          style={{ background: `linear-gradient(135deg, ${heroPal.bg}, ${heroPal.accent}22)`, minHeight: 240 }}>
+          <Heart className="w-8 h-8 mb-3" style={{ color: heroPal.accent }} />
+          <p className="text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${heroPal.accent}CC` }}>
+            Convidam para o casamento
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight mb-2" style={{ color: heroPal.accent, fontFamily: titleFamily }}>
             {eventName || "Seu Evento"}
           </h2>
-          <p className="text-sm mt-2" style={{ color: "#6B7280", fontFamily: bodyFamily }}>
+          <p className="text-xs mt-1" style={{ color: `${heroPal.text}99` }}>
             {eventDate ? format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
           </p>
+          {eventLocation && (
+            <p className="text-xs mt-1 flex items-center gap-1" style={{ color: `${heroPal.text}99` }}>
+              <MapPin className="w-3 h-3" /> {eventLocation}
+            </p>
+          )}
         </div>
-      </div>
+      )}
 
+      {/* Countdown */}
       {enabledSections.countdown && (
-        <div className="py-8 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
-          <p className="text-xs uppercase tracking-widest mb-3" style={{ color: primaryColor }}>Faltam</p>
-          <div className="flex justify-center gap-6">
-            {[{ n: 180, l: "Dias" }, { n: 12, l: "Horas" }, { n: 45, l: "Min" }].map((item) => (
+        <div className="py-6 text-center border-t" style={{ borderColor: `${primaryColor}15`, background: bgColor }}>
+          <p className="text-[10px] uppercase tracking-widest mb-3" style={{ color: primaryColor }}>Faltam</p>
+          <div className="flex justify-center gap-4">
+            {[{ n: "180", l: "Dias" }, { n: "12", l: "Horas" }, { n: "45", l: "Min" }].map((item) => (
               <div key={item.l} className="text-center">
-                <span className="text-2xl font-semibold text-foreground">{item.n}</span>
-                <span className="block text-xs text-muted-foreground">{item.l}</span>
+                <span className="text-xl font-semibold" style={{ color: secondaryColor }}>{item.n}</span>
+                <span className="block text-[10px]" style={{ color: `${secondaryColor}99` }}>{item.l}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {enabledSections.message && (
-        <div className="px-8 py-8 text-center">
-          <p className="text-sm text-muted-foreground leading-relaxed italic" style={{ fontFamily: bodyFamily }}>"{welcomeMessage || "Sua mensagem de boas-vindas"}"</p>
+      {/* Story */}
+      {enabledSections.story && (
+        <div className="px-6 py-8 text-center" style={{ background: storyPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-2 font-semibold" style={{ color: storyPal.accent }}>Nossa História</p>
+          <p className="text-xs leading-relaxed" style={{ color: storyPal.text }}>
+            {story ? (story.length > 120 ? story.slice(0, 120) + "..." : story) : "Conte como vocês se conheceram..."}
+          </p>
         </div>
       )}
 
+      {/* Gallery placeholder */}
+      {enabledSections.gallery && (
+        <div className="px-6 py-6" style={{ background: galleryPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-3 font-semibold" style={{ color: galleryPal.accent }}>Galeria</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="aspect-square rounded-lg" style={{ background: `${galleryPal.accent}15` }} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Info */}
+      {enabledSections.info && (
+        <div className="px-6 py-6" style={{ background: infoPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-3 font-semibold" style={{ color: infoPal.accent }}>Informações</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { icon: Calendar, label: "Data" },
+              { icon: MapPin, label: "Local" },
+              { icon: Users, label: "Traje" },
+              { icon: Clock, label: "Horário" },
+            ].map((c) => (
+              <div key={c.label} className="text-center p-3 rounded-xl" style={{ background: `${infoPal.text}06`, border: `1px solid ${infoPal.accent}15` }}>
+                <c.icon className="w-4 h-4 mx-auto mb-1" style={{ color: infoPal.accent }} />
+                <span className="text-[10px]" style={{ color: infoPal.text }}>{c.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Playlist */}
       {enabledSections.playlist && (
-        <div className="px-8 py-4 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
-          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: primaryColor }}>
+        <div className="px-6 py-4 text-center" style={{ background: playlistPal.bg }}>
+          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: playlistPal.accent }}>
             <Music className="w-3.5 h-3.5" /> Nossa Playlist
           </div>
         </div>
       )}
 
-      {enabledSections.wall && (
-        <div className="px-8 py-4 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
-          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: primaryColor }}>
-            <MessageCircle className="w-3.5 h-3.5" /> Mural de Recados
-          </div>
-        </div>
-      )}
-
+      {/* RSVP */}
       {enabledSections.rsvp && (
-        <div className="px-8 py-6 text-center border-t" style={{ borderColor: `${primaryColor}15` }}>
-          <button className="rounded-full px-6 py-2.5 text-sm font-medium text-white" style={{ backgroundColor: primaryColor }}>
+        <div className="px-6 py-6 text-center" style={{ background: rsvpPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: rsvpPal.accent }}>Confirmar Presença</p>
+          <button className="rounded-full px-6 py-2.5 text-xs font-medium"
+            style={{ backgroundColor: rsvpPal.accent, color: getReadableTextColor(rsvpPal.accent) }}>
             Confirmar Presença
           </button>
         </div>
       )}
 
-      {enabledSections.footer && (
-        <div className="px-8 py-4 text-center border-t" style={{ borderColor: `${primaryColor}10` }}>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <QrCode className="w-3 h-3" style={{ color: `${primaryColor}60` }} />
-            <span className="text-xs" style={{ color: `${primaryColor}60` }}>QR Code</span>
+      {/* Gifts */}
+      {enabledSections.gifts && (
+        <div className="px-6 py-6 text-center" style={{ background: giftsPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: giftsPal.accent }}>Lista de Presentes</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[1, 2].map((i) => (
+              <div key={i} className="p-3 rounded-xl text-center" style={{ background: `${giftsPal.text}08`, border: `1px solid ${giftsPal.accent}15` }}>
+                <Gift className="w-5 h-5 mx-auto mb-1" style={{ color: giftsPal.accent }} />
+                <span className="text-[10px]" style={{ color: giftsPal.text }}>Presente {i}</span>
+              </div>
+            ))}
           </div>
-          <p className="text-xs text-muted-foreground">Feito com ❤️ no EventoSite</p>
+        </div>
+      )}
+
+      {/* Wall */}
+      {enabledSections.wall && (
+        <div className="px-6 py-4 text-center" style={{ background: wallPal.bg }}>
+          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: wallPal.accent }}>
+            <MessageCircle className="w-3.5 h-3.5" /> Mural de Recados
+          </div>
+        </div>
+      )}
+
+      {/* Message */}
+      {enabledSections.message && (
+        <div className="px-6 py-6 text-center" style={{ background: messagePal.bg }}>
+          <Heart className="w-4 h-4 mx-auto mb-2" style={{ color: messagePal.accent }} />
+          <p className="text-xs italic leading-relaxed" style={{ color: `${messagePal.text}CC` }}>
+            "{welcomeMessage || "Sua mensagem de boas-vindas"}"
+          </p>
+        </div>
+      )}
+
+      {/* Footer */}
+      {enabledSections.footer && (
+        <div className="px-6 py-4 text-center" style={{ background: footerPal.bg }}>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <QrCode className="w-3 h-3" style={{ color: `${footerPal.accent}60` }} />
+            <span className="text-[10px]" style={{ color: `${footerPal.accent}60` }}>QR Code</span>
+          </div>
+          <p className="text-[10px]" style={{ color: `${footerPal.text}66` }}>Feito com ❤️ no EventoSite</p>
         </div>
       )}
     </div>
