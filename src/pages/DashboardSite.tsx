@@ -457,7 +457,7 @@ const DashboardSite = ({ event }: Props) => {
                       <div className="space-y-1">
                         <Label className="text-xs">Fundo</Label>
                         <div className="flex items-center gap-1">
-                          <input type="color" value={sectionColors[section.id]?.bg || currentTheme.bg} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
+                          <input type="color" value={sectionColors[section.id]?.bg || currentTheme.background} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
                           <Input value={sectionColors[section.id]?.bg || ""} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
                         </div>
                       </div>
