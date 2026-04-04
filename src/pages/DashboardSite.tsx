@@ -510,7 +510,7 @@ const DashboardSite = ({ event }: Props) => {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-foreground/90 rounded-b-2xl z-10" />
                 <div className="rounded-[2.2rem] overflow-hidden bg-card" style={{ backgroundColor: currentTheme.background }}>
                   <div className="pt-7">
-                    <PreviewContent currentTheme={currentTheme} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
+                    <PreviewContent currentTheme={{ ...currentTheme, bg: currentTheme.background }} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
                   </div>
                 </div>
               </div>
