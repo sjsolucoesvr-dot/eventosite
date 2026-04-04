@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePublicEvent, useGifts, useWallMessages, useAddWallMessage, useGalleryPhotos, useAddGuest } from "@/hooks/useEvent";
-import { eventThemes } from "@/stores/eventStore";
+import { resolveSiteTheme, resolveSiteSections, getReadableTextColor } from "@/lib/site-customization";
 import { Heart, Calendar, MapPin, Users, ChevronDown, Send, Gift, Clock, ArrowUp, Music, MessageCircle, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,19 +100,16 @@ const EventSite = () => {
     );
   }
 
-  // Resolve theme from DB
-  const dbTheme = eventThemes.find((t) => t.id === event.theme) || eventThemes[0];
+  // Resolve theme from DB using shared logic
+  const resolvedTheme = resolveSiteTheme(event);
   const theme = {
-    primaryDark: dbTheme.primaryDark,
-    primary: event.color_primary || dbTheme.primary,
-    primaryLight: event.color_secondary || dbTheme.primaryLight,
+    primary: resolvedTheme.primary,
+    primaryDark: resolvedTheme.secondary,
+    primaryLight: resolvedTheme.background,
   };
+  const buttonTextColor = getReadableTextColor(theme.primary);
 
-  const sections = (event.sections as Record<string, boolean>) || {
-    hero: true, countdown: true, story: true, gallery: true, info: true,
-    rsvp: true, gifts: true, location: true, message: true, footer: true,
-    playlist: true, wall: true,
-  };
+  const sections = resolveSiteSections(event.sections);
 
   const eventDate = event.date ? parseISO(event.date) : new Date();
   const days = Math.max(0, differenceInDays(eventDate, now));
@@ -314,7 +311,7 @@ const EventSite = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
               <a href="#rsvp">
                 <button className="mt-4 px-8 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ background: theme.primary, color: theme.primaryDark }}>
+                  style={{ background: theme.primary, color: buttonTextColor }}>
                   Confirmar Presença
                 </button>
               </a>
@@ -551,7 +548,7 @@ const EventSite = () => {
                       </p>
                     )}
                     <button className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"
-                      style={{ background: theme.primary, color: theme.primaryDark }}>
+                      style={{ background: theme.primary, color: buttonTextColor }}>
                       Presentear
                     </button>
                   </div>
@@ -671,7 +668,7 @@ const EventSite = () => {
         animate={{ opacity: showBackToTop ? 1 : 0, scale: showBackToTop ? 1 : 0 }}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
-        style={{ background: theme.primary, color: theme.primaryDark }}
+        style={{ background: theme.primary, color: buttonTextColor }}
       >
         <ArrowUp className="w-4 h-4" />
       </motion.button>

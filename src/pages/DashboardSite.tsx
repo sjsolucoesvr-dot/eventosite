@@ -457,7 +457,7 @@ const DashboardSite = ({ event }: Props) => {
                       <div className="space-y-1">
                         <Label className="text-xs">Fundo</Label>
                         <div className="flex items-center gap-1">
-                          <input type="color" value={sectionColors[section.id]?.bg || currentTheme.bg} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
+                          <input type="color" value={sectionColors[section.id]?.bg || currentTheme.background} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
                           <Input value={sectionColors[section.id]?.bg || ""} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
                         </div>
                       </div>
@@ -508,17 +508,17 @@ const DashboardSite = ({ event }: Props) => {
             <div className="relative">
               <div className="relative w-[390px] rounded-[3rem] border-[12px] border-foreground/90 bg-foreground/90 shadow-2xl overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-foreground/90 rounded-b-2xl z-10" />
-                <div className="rounded-[2.2rem] overflow-hidden bg-card" style={{ backgroundColor: currentTheme.bg }}>
+                <div className="rounded-[2.2rem] overflow-hidden bg-card" style={{ backgroundColor: currentTheme.background }}>
                   <div className="pt-7">
-                    <PreviewContent currentTheme={currentTheme} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
+                    <PreviewContent currentTheme={{ ...currentTheme, bg: currentTheme.background }} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
                   </div>
                 </div>
               </div>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/40 rounded-full" />
             </div>
           ) : (
-            <div className="w-full max-w-3xl bg-card rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden" style={{ backgroundColor: currentTheme.bg }}>
-              <PreviewContent currentTheme={currentTheme} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
+            <div className="w-full max-w-3xl bg-card rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden" style={{ backgroundColor: currentTheme.background }}>
+              <PreviewContent currentTheme={{ ...currentTheme, bg: currentTheme.background }} primaryColor={primaryColor} secondaryColor={secondaryColor} selectedFont={selectedFont} selectedBodyFont={selectedBodyFont} eventName={eventName} eventDate={eventDate} welcomeMessage={welcomeMessage} enabledSections={enabledSections} />
             </div>
           )}
         </div>
