@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,10 +25,13 @@ import ColorPickerField from "@/components/dashboard/ColorPickerField";
 import {
   CalendarIcon, Monitor, Smartphone, Upload, Check, Image, Heart, Save, Loader2,
   Clock, BookOpen, Camera, MapPin, MessageSquare, Gift, Users, Layout, Music, MessageCircle, QrCode,
+  X, Globe, GlobeLock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useUpdateEvent } from "@/hooks/useEvent";
+import { useUpdateEvent, uploadEventPhoto, useGalleryPhotos } from "@/hooks/useEvent";
+import { supabase } from "@/integrations/supabase/client";
 import type { EventRow } from "@/hooks/useEvent";
+import { useQueryClient } from "@tanstack/react-query";
 
 const themes = siteThemes;
 
