@@ -80,6 +80,14 @@ const formatLocalDate = (value?: Date) => (value ? format(value, "yyyy-MM-dd") :
 
 const DashboardSite = ({ event }: Props) => {
   const updateEvent = useUpdateEvent();
+  const queryClient = useQueryClient();
+  const galleryQuery = useGalleryPhotos(event?.id);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+  const [publishToggling, setPublishToggling] = useState(false);
 
   // Content state
   const [eventName, setEventName] = useState("");
