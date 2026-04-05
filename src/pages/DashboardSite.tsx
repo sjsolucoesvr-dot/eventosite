@@ -506,20 +506,69 @@ const DashboardSite = ({ event }: Props) => {
 
             <div className="space-y-2">
               <Label className="font-body text-sm">Foto de capa</Label>
-              <div className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer">
-                <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Arraste ou clique para enviar</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG ou WEBP até 5MB</p>
-              </div>
+              <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+              {event.hero_image_url ? (
+                <div className="relative rounded-2xl overflow-hidden group">
+                  <img src={event.hero_image_url} alt="Capa" className="w-full h-40 object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => coverInputRef.current?.click()} disabled={coverUploading}>
+                      {coverUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Trocar"}
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={async () => {
+                      await updateEvent.mutateAsync({ id: event.id, hero_image_url: null });
+                      toast.success("Capa removida!");
+                    }}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => coverInputRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer"
+                >
+                  {coverUploading ? (
+                    <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin mb-2" />
+                  ) : (
+                    <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  )}
+                  <p className="text-sm text-muted-foreground">Arraste ou clique para enviar</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG ou WEBP até 5MB</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label className="font-body text-sm">Galeria de fotos</Label>
-              <div className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer">
-                <Image className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Envie múltiplas fotos</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">Até 20 fotos</p>
-              </div>
+              <Label className="font-body text-sm">Galeria de fotos ({galleryQuery.data?.length || 0}/20)</Label>
+              <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
+              {(galleryQuery.data?.length || 0) > 0 && (
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  {galleryQuery.data?.map((photo) => (
+                    <div key={photo.id} className="relative group rounded-xl overflow-hidden aspect-square">
+                      <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => handleDeleteGalleryPhoto(photo.id, photo.storage_path)}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(galleryQuery.data?.length || 0) < 20 && (
+                <div
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-primary/40 transition-colors cursor-pointer"
+                >
+                  {galleryUploading ? (
+                    <Loader2 className="w-6 h-6 mx-auto text-primary animate-spin mb-1" />
+                  ) : (
+                    <Image className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
+                  )}
+                  <p className="text-sm text-muted-foreground">Envie múltiplas fotos</p>
+                </div>
+              )}
             </div>
 
             {/* Save button */}
