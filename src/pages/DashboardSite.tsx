@@ -136,7 +136,80 @@ const DashboardSite = ({ event }: Props) => {
     setSecondaryColor(event.color_secondary || "#C9A96E");
     setEnabledSections(resolveSiteSections(event.sections));
     setSectionColors(resolveSectionColors(event.section_colors) as Record<string, { bg: string; text: string; accent: string }>);
+    setIsPublished(!!event.is_published);
   }, [event]);
+
+  // Cover upload
+  const handleCoverUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !event) return;
+    setCoverUploading(true);
+    try {
+      const { publicUrl } = await uploadEventPhoto(file, event.id, "cover");
+      await updateEvent.mutateAsync({ id: event.id, hero_image_url: publicUrl });
+      toast.success("Foto de capa atualizada!");
+    } catch {
+      toast.error("Erro ao enviar foto de capa.");
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }, [event, updateEvent]);
+
+  // Gallery upload
+  const handleGalleryUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length || !event) return;
+    setGalleryUploading(true);
+    try {
+      const currentPhotos = galleryQuery.data?.length || 0;
+      for (let i = 0; i < Math.min(files.length, 20 - currentPhotos); i++) {
+        const { publicUrl, path } = await uploadEventPhoto(files[i], event.id, "gallery");
+        await supabase.from("gallery_photos").insert({
+          event_id: event.id,
+          url: publicUrl,
+          storage_path: path,
+          sort_order: currentPhotos + i,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["gallery", event.id] });
+      toast.success(`${Math.min(files.length, 20 - currentPhotos)} foto(s) enviada(s)!`);
+    } catch {
+      toast.error("Erro ao enviar fotos.");
+    } finally {
+      setGalleryUploading(false);
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
+    }
+  }, [event, galleryQuery.data, queryClient]);
+
+  // Delete gallery photo
+  const handleDeleteGalleryPhoto = useCallback(async (photoId: string, storagePath: string | null) => {
+    if (!event) return;
+    try {
+      if (storagePath) await supabase.storage.from("event-photos").remove([storagePath]);
+      await supabase.from("gallery_photos").delete().eq("id", photoId);
+      queryClient.invalidateQueries({ queryKey: ["gallery", event.id] });
+      toast.success("Foto removida!");
+    } catch {
+      toast.error("Erro ao remover foto.");
+    }
+  }, [event, queryClient]);
+
+  // Publish toggle
+  const handlePublishToggle = useCallback(async () => {
+    if (!event) return;
+    setPublishToggling(true);
+    try {
+      const newVal = !isPublished;
+      await updateEvent.mutateAsync({ id: event.id, is_published: newVal });
+      setIsPublished(newVal);
+      toast.success(newVal ? "Site publicado! Agora está acessível ao público." : "Site despublicado. Agora está visível apenas para você.");
+    } catch {
+      toast.error("Erro ao alterar publicação.");
+    } finally {
+      setPublishToggling(false);
+    }
+  }, [event, isPublished, updateEvent]);
 
   if (!event) {
     return (
