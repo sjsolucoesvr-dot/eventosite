@@ -289,7 +289,28 @@ const DashboardSite = ({ event }: Props) => {
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Editor Panel */}
       <div className="w-[40%] min-w-[380px] overflow-y-auto border-r border-border p-6">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground mb-1">Meu Site</h1>
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Meu Site</h1>
+          <button
+            onClick={handlePublishToggle}
+            disabled={publishToggling}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all border",
+              isPublished
+                ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400"
+                : "bg-muted border-border text-muted-foreground hover:bg-accent"
+            )}
+          >
+            {publishToggling ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : isPublished ? (
+              <Globe className="w-3.5 h-3.5" />
+            ) : (
+              <GlobeLock className="w-3.5 h-3.5" />
+            )}
+            {isPublished ? "Publicado" : "Rascunho"}
+          </button>
+        </div>
         <p className="text-sm text-muted-foreground mb-6">Personalize o site do seu evento</p>
 
         <Tabs defaultValue="conteudo" className="w-full">
