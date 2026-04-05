@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,10 +25,13 @@ import ColorPickerField from "@/components/dashboard/ColorPickerField";
 import {
   CalendarIcon, Monitor, Smartphone, Upload, Check, Image, Heart, Save, Loader2,
   Clock, BookOpen, Camera, MapPin, MessageSquare, Gift, Users, Layout, Music, MessageCircle, QrCode,
+  X, Globe, GlobeLock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useUpdateEvent } from "@/hooks/useEvent";
+import { useUpdateEvent, uploadEventPhoto, useGalleryPhotos } from "@/hooks/useEvent";
+import { supabase } from "@/integrations/supabase/client";
 import type { EventRow } from "@/hooks/useEvent";
+import { useQueryClient } from "@tanstack/react-query";
 
 const themes = siteThemes;
 
@@ -77,6 +80,14 @@ const formatLocalDate = (value?: Date) => (value ? format(value, "yyyy-MM-dd") :
 
 const DashboardSite = ({ event }: Props) => {
   const updateEvent = useUpdateEvent();
+  const queryClient = useQueryClient();
+  const galleryQuery = useGalleryPhotos(event?.id);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+  const [publishToggling, setPublishToggling] = useState(false);
 
   // Content state
   const [eventName, setEventName] = useState("");
@@ -125,7 +136,80 @@ const DashboardSite = ({ event }: Props) => {
     setSecondaryColor(event.color_secondary || "#C9A96E");
     setEnabledSections(resolveSiteSections(event.sections));
     setSectionColors(resolveSectionColors(event.section_colors) as Record<string, { bg: string; text: string; accent: string }>);
+    setIsPublished(!!event.is_published);
   }, [event]);
+
+  // Cover upload
+  const handleCoverUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !event) return;
+    setCoverUploading(true);
+    try {
+      const { publicUrl } = await uploadEventPhoto(file, event.id, "cover");
+      await updateEvent.mutateAsync({ id: event.id, hero_image_url: publicUrl });
+      toast.success("Foto de capa atualizada!");
+    } catch {
+      toast.error("Erro ao enviar foto de capa.");
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }, [event, updateEvent]);
+
+  // Gallery upload
+  const handleGalleryUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length || !event) return;
+    setGalleryUploading(true);
+    try {
+      const currentPhotos = galleryQuery.data?.length || 0;
+      for (let i = 0; i < Math.min(files.length, 20 - currentPhotos); i++) {
+        const { publicUrl, path } = await uploadEventPhoto(files[i], event.id, "gallery");
+        await supabase.from("gallery_photos").insert({
+          event_id: event.id,
+          url: publicUrl,
+          storage_path: path,
+          sort_order: currentPhotos + i,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["gallery", event.id] });
+      toast.success(`${Math.min(files.length, 20 - currentPhotos)} foto(s) enviada(s)!`);
+    } catch {
+      toast.error("Erro ao enviar fotos.");
+    } finally {
+      setGalleryUploading(false);
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
+    }
+  }, [event, galleryQuery.data, queryClient]);
+
+  // Delete gallery photo
+  const handleDeleteGalleryPhoto = useCallback(async (photoId: string, storagePath: string | null) => {
+    if (!event) return;
+    try {
+      if (storagePath) await supabase.storage.from("event-photos").remove([storagePath]);
+      await supabase.from("gallery_photos").delete().eq("id", photoId);
+      queryClient.invalidateQueries({ queryKey: ["gallery", event.id] });
+      toast.success("Foto removida!");
+    } catch {
+      toast.error("Erro ao remover foto.");
+    }
+  }, [event, queryClient]);
+
+  // Publish toggle
+  const handlePublishToggle = useCallback(async () => {
+    if (!event) return;
+    setPublishToggling(true);
+    try {
+      const newVal = !isPublished;
+      await updateEvent.mutateAsync({ id: event.id, is_published: newVal });
+      setIsPublished(newVal);
+      toast.success(newVal ? "Site publicado! Agora está acessível ao público." : "Site despublicado. Agora está visível apenas para você.");
+    } catch {
+      toast.error("Erro ao alterar publicação.");
+    } finally {
+      setPublishToggling(false);
+    }
+  }, [event, isPublished, updateEvent]);
 
   if (!event) {
     return (
@@ -205,7 +289,28 @@ const DashboardSite = ({ event }: Props) => {
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Editor Panel */}
       <div className="w-[40%] min-w-[380px] overflow-y-auto border-r border-border p-6">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground mb-1">Meu Site</h1>
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Meu Site</h1>
+          <button
+            onClick={handlePublishToggle}
+            disabled={publishToggling}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all border",
+              isPublished
+                ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400"
+                : "bg-muted border-border text-muted-foreground hover:bg-accent"
+            )}
+          >
+            {publishToggling ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : isPublished ? (
+              <Globe className="w-3.5 h-3.5" />
+            ) : (
+              <GlobeLock className="w-3.5 h-3.5" />
+            )}
+            {isPublished ? "Publicado" : "Rascunho"}
+          </button>
+        </div>
         <p className="text-sm text-muted-foreground mb-6">Personalize o site do seu evento</p>
 
         <Tabs defaultValue="conteudo" className="w-full">
@@ -401,20 +506,69 @@ const DashboardSite = ({ event }: Props) => {
 
             <div className="space-y-2">
               <Label className="font-body text-sm">Foto de capa</Label>
-              <div className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer">
-                <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Arraste ou clique para enviar</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG ou WEBP até 5MB</p>
-              </div>
+              <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+              {event.hero_image_url ? (
+                <div className="relative rounded-2xl overflow-hidden group">
+                  <img src={event.hero_image_url} alt="Capa" className="w-full h-40 object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => coverInputRef.current?.click()} disabled={coverUploading}>
+                      {coverUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Trocar"}
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={async () => {
+                      await updateEvent.mutateAsync({ id: event.id, hero_image_url: null });
+                      toast.success("Capa removida!");
+                    }}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => coverInputRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer"
+                >
+                  {coverUploading ? (
+                    <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin mb-2" />
+                  ) : (
+                    <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  )}
+                  <p className="text-sm text-muted-foreground">Arraste ou clique para enviar</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG ou WEBP até 5MB</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label className="font-body text-sm">Galeria de fotos</Label>
-              <div className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer">
-                <Image className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Envie múltiplas fotos</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">Até 20 fotos</p>
-              </div>
+              <Label className="font-body text-sm">Galeria de fotos ({galleryQuery.data?.length || 0}/20)</Label>
+              <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
+              {(galleryQuery.data?.length || 0) > 0 && (
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  {galleryQuery.data?.map((photo) => (
+                    <div key={photo.id} className="relative group rounded-xl overflow-hidden aspect-square">
+                      <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => handleDeleteGalleryPhoto(photo.id, photo.storage_path)}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(galleryQuery.data?.length || 0) < 20 && (
+                <div
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-primary/40 transition-colors cursor-pointer"
+                >
+                  {galleryUploading ? (
+                    <Loader2 className="w-6 h-6 mx-auto text-primary animate-spin mb-1" />
+                  ) : (
+                    <Image className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
+                  )}
+                  <p className="text-sm text-muted-foreground">Envie múltiplas fotos</p>
+                </div>
+              )}
             </div>
 
             {/* Save button */}
