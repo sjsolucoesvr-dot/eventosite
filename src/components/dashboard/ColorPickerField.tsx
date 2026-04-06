@@ -194,10 +194,10 @@ const ColorPickerField = ({
 
       <div
         ref={saturationRef}
-        aria-label={`${label} - área de seleção`}
+      aria-label={`${label} - área de seleção`}
         className="relative h-44 cursor-crosshair overflow-hidden rounded-[1.5rem] border border-border shadow-inner"
         onPointerDown={handlePointerDown}
-        style={saturationBackground}
+        style={{ ...saturationBackground, touchAction: "none" }}
       >
         <div
           className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background shadow"
