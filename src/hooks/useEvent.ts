@@ -351,7 +351,7 @@ export function useMarkNotificationsRead() {
 }
 
 // PHOTO UPLOAD
-export async function uploadEventPhoto(file: File, eventId: string, type: "cover" | "gallery") {
+export async function uploadEventPhoto(file: File, eventId: string, type: "cover" | "gallery" | "gifts") {
   const ext = file.name.split(".").pop();
   const path = `${eventId}/${type}/${Date.now()}.${ext}`;
 
