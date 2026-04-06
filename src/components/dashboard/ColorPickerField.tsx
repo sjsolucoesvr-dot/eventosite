@@ -194,10 +194,10 @@ const ColorPickerField = ({
 
       <div
         ref={saturationRef}
-        aria-label={`${label} - área de seleção`}
+      aria-label={`${label} - área de seleção`}
         className="relative h-44 cursor-crosshair overflow-hidden rounded-[1.5rem] border border-border shadow-inner"
         onPointerDown={handlePointerDown}
-        style={saturationBackground}
+        style={{ ...saturationBackground, touchAction: "none" }}
       >
         <div
           className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background shadow"
@@ -212,6 +212,7 @@ const ColorPickerField = ({
         min={0}
         onChange={(event) => commitHsv({ h: Number(event.target.value) })}
         style={{
+          touchAction: "none",
           background:
             "linear-gradient(90deg, #FF0000 0%, #FFFF00 16%, #00FF00 33%, #00FFFF 50%, #0000FF 67%, #FF00FF 84%, #FF0000 100%)",
         }}
