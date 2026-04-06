@@ -208,6 +208,7 @@ const ColorPickerField = ({
       <input
         aria-label={`${label} - matiz`}
         className="h-3 w-full cursor-pointer appearance-none rounded-full border border-border bg-transparent"
+        style={{ touchAction: "none" }}
         max={360}
         min={0}
         onChange={(event) => commitHsv({ h: Number(event.target.value) })}
