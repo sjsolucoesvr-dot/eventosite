@@ -716,10 +716,10 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
   const footerPal = pal("footer");
 
   return (
-    <div style={{ fontFamily: bodyFamily }}>
+    <div style={{ fontFamily: bodyFamily }} className="space-y-0">
       {/* Hero */}
       {enabledSections.hero !== false && (
-        <div className="relative py-16 px-6 flex flex-col items-center justify-center text-center"
+        <div className="relative py-20 px-6 flex flex-col items-center justify-center text-center"
           style={{ background: `linear-gradient(135deg, ${heroPal.bg}, ${heroPal.accent}22)`, minHeight: 240 }}>
           <Heart className="w-8 h-8 mb-3" style={{ color: heroPal.accent }} />
           <p className="text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${heroPal.accent}CC` }}>
