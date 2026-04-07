@@ -182,7 +182,7 @@ const DashboardGifts = ({ event }: Props) => {
 
       <div>
         <h3 className="font-display text-lg font-semibold tracking-tight text-foreground mb-4">Presentes cadastrados</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {gifts.map((gift) => (
             <div key={gift.id} className="card-premium rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300 group">
               <div className="w-full h-28 rounded-xl bg-muted/50 flex items-center justify-center mb-4 overflow-hidden">
