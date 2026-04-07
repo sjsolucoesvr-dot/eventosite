@@ -756,7 +756,7 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Story */}
       {enabledSections.story && (
-        <div className="px-6 py-8 text-center" style={{ background: storyPal.bg }}>
+        <div className="px-6 py-12 text-center" style={{ background: storyPal.bg }}>
           <p className="text-[10px] uppercase tracking-[0.2em] mb-2 font-semibold" style={{ color: storyPal.accent }}>Nossa História</p>
           <p className="text-xs leading-relaxed" style={{ color: storyPal.text }}>
             {story ? (story.length > 120 ? story.slice(0, 120) + "..." : story) : "Conte como vocês se conheceram..."}
@@ -766,7 +766,7 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Gallery placeholder */}
       {enabledSections.gallery && (
-        <div className="px-6 py-6" style={{ background: galleryPal.bg }}>
+        <div className="px-6 py-10" style={{ background: galleryPal.bg }}>
           <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-3 font-semibold" style={{ color: galleryPal.accent }}>Galeria</p>
           <div className="grid grid-cols-3 gap-1.5">
             {[1, 2, 3].map((i) => (
@@ -778,17 +778,17 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Info */}
       {enabledSections.info && (
-        <div className="px-6 py-6" style={{ background: infoPal.bg }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-3 font-semibold" style={{ color: infoPal.accent }}>Informações</p>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="px-6 py-10" style={{ background: infoPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-4 font-semibold" style={{ color: infoPal.accent }}>Informações</p>
+          <div className="grid grid-cols-2 gap-3">
             {[
               { icon: Calendar, label: "Data" },
               { icon: MapPin, label: "Local" },
               { icon: Users, label: "Traje" },
               { icon: Clock, label: "Horário" },
             ].map((c) => (
-              <div key={c.label} className="text-center p-3 rounded-xl" style={{ background: `${infoPal.text}06`, border: `1px solid ${infoPal.accent}15` }}>
-                <c.icon className="w-4 h-4 mx-auto mb-1" style={{ color: infoPal.accent }} />
+              <div key={c.label} className="text-center p-4 rounded-xl" style={{ background: `${infoPal.text}06`, border: `1px solid ${infoPal.accent}15` }}>
+                <c.icon className="w-4 h-4 mx-auto mb-1.5" style={{ color: infoPal.accent }} />
                 <span className="text-[10px]" style={{ color: infoPal.text }}>{c.label}</span>
               </div>
             ))}
@@ -798,7 +798,7 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Playlist */}
       {enabledSections.playlist && (
-        <div className="px-6 py-4 text-center" style={{ background: playlistPal.bg }}>
+        <div className="px-6 py-8 text-center" style={{ background: playlistPal.bg }}>
           <div className="flex items-center justify-center gap-2 text-xs" style={{ color: playlistPal.accent }}>
             <Music className="w-3.5 h-3.5" /> Nossa Playlist
           </div>
@@ -807,8 +807,8 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* RSVP */}
       {enabledSections.rsvp && (
-        <div className="px-6 py-6 text-center" style={{ background: rsvpPal.bg }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: rsvpPal.accent }}>Confirmar Presença</p>
+        <div className="px-6 py-10 text-center" style={{ background: rsvpPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-4 font-semibold" style={{ color: rsvpPal.accent }}>Confirmar Presença</p>
           <button className="rounded-full px-6 py-2.5 text-xs font-medium"
             style={{ backgroundColor: rsvpPal.accent, color: getReadableTextColor(rsvpPal.accent) }}>
             Confirmar Presença
@@ -818,12 +818,12 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Gifts */}
       {enabledSections.gifts && (
-        <div className="px-6 py-6 text-center" style={{ background: giftsPal.bg }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: giftsPal.accent }}>Lista de Presentes</p>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="px-6 py-10 text-center" style={{ background: giftsPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-4 font-semibold" style={{ color: giftsPal.accent }}>Lista de Presentes</p>
+          <div className="grid grid-cols-2 gap-3">
             {[1, 2].map((i) => (
-              <div key={i} className="p-3 rounded-xl text-center" style={{ background: `${giftsPal.text}08`, border: `1px solid ${giftsPal.accent}15` }}>
-                <Gift className="w-5 h-5 mx-auto mb-1" style={{ color: giftsPal.accent }} />
+              <div key={i} className="p-4 rounded-xl text-center" style={{ background: `${giftsPal.text}08`, border: `1px solid ${giftsPal.accent}15` }}>
+                <Gift className="w-5 h-5 mx-auto mb-1.5" style={{ color: giftsPal.accent }} />
                 <span className="text-[10px]" style={{ color: giftsPal.text }}>Presente {i}</span>
               </div>
             ))}
@@ -833,7 +833,7 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Wall */}
       {enabledSections.wall && (
-        <div className="px-6 py-4 text-center" style={{ background: wallPal.bg }}>
+        <div className="px-6 py-8 text-center" style={{ background: wallPal.bg }}>
           <div className="flex items-center justify-center gap-2 text-xs" style={{ color: wallPal.accent }}>
             <MessageCircle className="w-3.5 h-3.5" /> Mural de Recados
           </div>
@@ -842,7 +842,7 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Message */}
       {enabledSections.message && (
-        <div className="px-6 py-6 text-center" style={{ background: messagePal.bg }}>
+        <div className="px-6 py-10 text-center" style={{ background: messagePal.bg }}>
           <Heart className="w-4 h-4 mx-auto mb-2" style={{ color: messagePal.accent }} />
           <p className="text-xs italic leading-relaxed" style={{ color: `${messagePal.text}CC` }}>
             "{welcomeMessage || "Sua mensagem de boas-vindas"}"
@@ -852,7 +852,7 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Footer */}
       {enabledSections.footer && (
-        <div className="px-6 py-4 text-center" style={{ background: footerPal.bg }}>
+        <div className="px-6 py-6 text-center" style={{ background: footerPal.bg }}>
           <div className="flex items-center justify-center gap-2 mb-2">
             <QrCode className="w-3 h-3" style={{ color: `${footerPal.accent}60` }} />
             <span className="text-[10px]" style={{ color: `${footerPal.accent}60` }}>QR Code</span>
