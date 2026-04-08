@@ -16,7 +16,6 @@ const Navbar = () => {
   const links = [
     { label: "Funcionalidades", href: "#funcionalidades" },
     { label: "Preços", href: "#preços" },
-    { label: "Marketplace", href: "/marketplace" },
     { label: "FAQ", href: "#faq" },
   ];
 
@@ -31,9 +30,9 @@ const Navbar = () => {
       }}
     >
       <div className="max-w-6xl mx-auto flex items-center justify-between h-16 px-6">
-        <Link to="/" className="flex items-center gap-2">
-          <Heart className="h-4 w-4 text-primary fill-primary" />
-          <span className="text-xl font-display font-semibold text-foreground">EventoSite</span>
+        <Link to="/" className="flex items-center gap-2 group">
+          <Heart className="h-4 w-4 text-primary fill-primary group-hover:scale-110 transition-transform duration-200" />
+          <span className="font-script text-2xl text-foreground" style={{ lineHeight: 1.2 }}>EventoSite</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

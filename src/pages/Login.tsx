@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Eye, EyeOff } from "lucide-react";
+import { Heart, Eye, EyeOff, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, signOut, user } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
@@ -28,8 +28,55 @@ const Login = () => {
     navigate("/dashboard");
   };
 
+  // If already logged in, show switch-account UI instead of auto-redirecting
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <div className="min-h-screen flex font-body">
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80')` }} />
+          <div className="absolute inset-0 bg-gradient-to-br from-foreground/60 via-foreground/40 to-foreground/70" />
+          <div className="relative z-10 flex flex-col justify-end p-12">
+            <h2 className="font-display text-4xl font-bold text-white leading-tight">
+              Crie momentos <br /><em className="text-primary italic">inesquecíveis</em>
+            </h2>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8 bg-background">
+          <div className="w-full max-w-md space-y-6 text-center">
+            <Link to="/" className="inline-flex items-center gap-2">
+              <Heart className="h-5 w-5 text-primary fill-primary" />
+              <span className="text-2xl font-display font-semibold text-foreground">EventoSite</span>
+            </Link>
+            <div className="card-premium rounded-3xl p-8 space-y-5">
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Heart className="w-7 h-7 text-primary fill-primary" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-semibold text-foreground mb-1">Você já está logado</h2>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+              </div>
+              <Button className="w-full h-11 rounded-full font-body" asChild>
+                <Link to="/dashboard">Continuar no Dashboard</Link>
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-3 text-muted-foreground font-body">ou</span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full h-11 rounded-full font-body gap-2"
+                onClick={async () => { await signOut(); }}
+              >
+                <LogOut className="w-4 h-4" />
+                Entrar com outra conta
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -72,9 +72,22 @@ const Marketplace = ({ embedded }: { embedded?: boolean }) => {
     <div className={`${embedded ? '' : 'min-h-screen'} font-body bg-background`}>
       {!embedded && <Navbar />}
 
+      {/* Coming Soon Banner */}
+      <div className="bg-amber-50 border-b border-amber-200">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-center gap-3">
+          <span className="text-amber-600 text-sm font-medium">🚧</span>
+          <p className="text-sm text-amber-800 font-medium">
+            <span className="font-semibold">Marketplace em breve!</span> Os dados exibidos são de demonstração. Em breve você poderá encontrar fornecedores reais na sua cidade.
+          </p>
+        </div>
+      </div>
+
       {/* Hero */}
       <section className={`${embedded ? 'pt-8' : 'pt-32'} pb-12 px-6`}>
         <div className="max-w-6xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-amber-100 border border-amber-200 text-amber-700 px-4 py-1.5 rounded-full text-xs font-semibold mb-6">
+            <span>Em Desenvolvimento</span>
+          </div>
           <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
             Encontre os melhores <em className="text-primary not-italic">fornecedores</em>
           </h1>

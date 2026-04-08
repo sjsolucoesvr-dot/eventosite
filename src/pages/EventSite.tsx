@@ -379,10 +379,18 @@ const EventSite = () => {
                 { icon: Clock, title: "Horário", info: event.time ? `${event.time}h` : "A definir" },
               ].map((card, i) => (
                 <ScrollSection key={i} delay={i * 0.1}>
-                  <div className="text-center p-6 rounded-2xl" style={{ background: `${infoPal.text}08`, border: `1px solid ${infoPal.accent}20` }}>
-                    <card.icon className="w-6 h-6 mx-auto mb-3" style={{ color: infoPal.accent }} />
-                    <h4 className="text-sm font-semibold mb-2" style={{ color: infoPal.text }}>{card.title}</h4>
-                    <p className="text-xs whitespace-pre-line" style={{ color: `${infoPal.text}BB` }}>{card.info}</p>
+                  <div className="text-center p-8 rounded-2xl"
+                    style={{
+                      background: `${infoPal.accent}12`,
+                      border: `1.5px solid ${infoPal.accent}35`,
+                      boxShadow: `0 2px 12px ${infoPal.accent}10`,
+                    }}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+                      style={{ background: `${infoPal.accent}20` }}>
+                      <card.icon className="w-5 h-5" style={{ color: infoPal.accent }} />
+                    </div>
+                    <h4 className="text-xs uppercase tracking-widest font-semibold mb-2" style={{ color: `${infoPal.accent}CC` }}>{card.title}</h4>
+                    <p className="text-sm font-medium whitespace-pre-line" style={{ color: infoPal.text }}>{card.info}</p>
                   </div>
                 </ScrollSection>
               ))}
@@ -531,26 +539,35 @@ const EventSite = () => {
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {availableGifts.map((gift, i) => (
                 <ScrollSection key={gift.id} delay={i * 0.08}>
-                  <div className="p-6 rounded-2xl text-center group cursor-pointer transition-all duration-300 hover:-translate-y-1"
+                  <div className="rounded-2xl text-center group cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     style={{ background: `${giftsPal.text}10`, border: `1px solid ${giftsPal.accent}20` }}>
-                    <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: `${giftsPal.accent}20` }}>
+                    <div className="w-full h-36 flex items-center justify-center" style={{ background: `${giftsPal.accent}15` }}>
                       {gift.image_url ? (
-                        <img src={gift.image_url} alt={gift.name} className="w-full h-full object-cover rounded-2xl" />
-                      ) : (
-                        <Gift className="w-7 h-7" style={{ color: giftsPal.accent }} />
-                      )}
+                        <img
+                          src={gift.image_url}
+                          alt={gift.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                          }}
+                        />
+                      ) : null}
+                      <Gift className={`w-10 h-10 ${gift.image_url ? "hidden" : ""}`} style={{ color: giftsPal.accent }} />
                     </div>
-                    <h4 className="font-semibold text-sm mb-1" style={{ color: giftsPal.text }}>{gift.name}</h4>
-                    {gift.description && <p className="text-xs mb-3" style={{ color: `${giftsPal.text}BB` }}>{gift.description}</p>}
-                    {gift.suggested_value && (
-                      <p className="text-xl font-bold mb-4" style={{ color: giftsPal.accent }}>
-                        R$ {gift.suggested_value.toLocaleString("pt-BR")}
-                      </p>
-                    )}
-                    <button className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"
-                      style={{ background: giftsPal.accent, color: getReadableTextColor(giftsPal.accent) }}>
-                      Presentear
-                    </button>
+                    <div className="p-4">
+                      <h4 className="font-semibold text-sm mb-1" style={{ color: giftsPal.text }}>{gift.name}</h4>
+                      {gift.description && <p className="text-xs mb-3" style={{ color: `${giftsPal.text}BB` }}>{gift.description}</p>}
+                      {gift.suggested_value && (
+                        <p className="text-xl font-bold mb-4" style={{ color: giftsPal.accent }}>
+                          R$ {gift.suggested_value.toLocaleString("pt-BR")}
+                        </p>
+                      )}
+                      <button className="px-6 py-2 rounded-full text-xs font-medium transition-all hover:opacity-90"
+                        style={{ background: giftsPal.accent, color: getReadableTextColor(giftsPal.accent) }}>
+                        Presentear
+                      </button>
+                    </div>
                   </div>
                 </ScrollSection>
               ))}

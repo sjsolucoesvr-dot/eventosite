@@ -13,27 +13,27 @@ interface CatalogItem {
 
 const catalog: CatalogItem[] = [
   // Cozinha
-  { name: "Jogo de Panelas Antiaderente", value: 350, image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop", category: "Cozinha" },
-  { name: "Air Fryer", value: 450, image: "https://images.unsplash.com/photo-1626509653291-18d9a934b9db?w=200&h=200&fit=crop", category: "Cozinha" },
-  { name: "Jogo de Talheres 24 Peças", value: 180, image: "https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?w=200&h=200&fit=crop", category: "Cozinha" },
-  { name: "Conjunto de Travessas", value: 120, image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=200&h=200&fit=crop", category: "Cozinha" },
-  { name: "Jogo de Copos e Taças", value: 150, image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed514?w=200&h=200&fit=crop", category: "Cozinha" },
-  { name: "Aparelho de Jantar 30 Peças", value: 280, image: "https://images.unsplash.com/photo-1603199506016-b9a594b593c0?w=200&h=200&fit=crop", category: "Cozinha" },
-  { name: "Cafeteira Elétrica", value: 200, image: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200&h=200&fit=crop", category: "Cozinha" },
-  { name: "Liquidificador", value: 180, image: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Jogo de Panelas Antiaderente", value: 350, image: "https://images.unsplash.com/photo-1556910146-6121b9613959?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Air Fryer", value: 450, image: "https://images.unsplash.com/photo-1695089028114-ce28248f0ab9?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Jogo de Talheres 24 Peças", value: 180, image: "https://images.unsplash.com/photo-1584589167171-541ce45f1eea?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Conjunto de Travessas", value: 120, image: "https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Jogo de Copos e Taças", value: 150, image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Aparelho de Jantar 30 Peças", value: 280, image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Cafeteira Elétrica", value: 200, image: "https://images.unsplash.com/photo-1611854779393-1b2da9d400fe?w=200&h=200&fit=crop", category: "Cozinha" },
+  { name: "Liquidificador", value: 180, image: "https://images.unsplash.com/photo-1590005176489-db2e714711fc?w=200&h=200&fit=crop", category: "Cozinha" },
   // Quarto
-  { name: "Jogo de Cama Queen", value: 250, image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=200&h=200&fit=crop", category: "Quarto" },
-  { name: "Travesseiro Viscoelástico (2un)", value: 180, image: "https://images.unsplash.com/photo-1584100936595-c0c6b851e957?w=200&h=200&fit=crop", category: "Quarto" },
-  { name: "Edredom King", value: 320, image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=200&h=200&fit=crop", category: "Quarto" },
+  { name: "Jogo de Cama Queen", value: 250, image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=200&h=200&fit=crop", category: "Quarto" },
+  { name: "Travesseiro Viscoelástico (2un)", value: 180, image: "https://images.unsplash.com/photo-1593533482434-d8443c6c5649?w=200&h=200&fit=crop", category: "Quarto" },
+  { name: "Edredom King", value: 320, image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&h=200&fit=crop", category: "Quarto" },
   // Banheiro
-  { name: "Jogo de Toalhas 5 Peças", value: 150, image: "https://images.unsplash.com/photo-1616627988170-851c46fb0085?w=200&h=200&fit=crop", category: "Banheiro" },
-  { name: "Kit Organizadores de Banheiro", value: 90, image: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=200&h=200&fit=crop", category: "Banheiro" },
+  { name: "Jogo de Toalhas 5 Peças", value: 150, image: "https://images.unsplash.com/photo-1527986654082-0b5b3fef2632?w=200&h=200&fit=crop", category: "Banheiro" },
+  { name: "Kit Organizadores de Banheiro", value: 90, image: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=200&h=200&fit=crop", category: "Banheiro" },
   // Sala
-  { name: "Almofadas Decorativas (4un)", value: 120, image: "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=200&h=200&fit=crop", category: "Sala" },
-  { name: "Luminária de Mesa", value: 160, image: "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=200&h=200&fit=crop", category: "Sala" },
+  { name: "Almofadas Decorativas (4un)", value: 120, image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200&h=200&fit=crop", category: "Sala" },
+  { name: "Luminária de Mesa", value: 160, image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=200&h=200&fit=crop", category: "Sala" },
   // Eletrodomésticos
-  { name: "Aspirador Robô", value: 800, image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=200&h=200&fit=crop", category: "Eletrodomésticos" },
-  { name: "Ferro de Passar a Vapor", value: 200, image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200&h=200&fit=crop", category: "Eletrodomésticos" },
+  { name: "Aspirador Robô", value: 800, image: "https://images.unsplash.com/photo-1647940990395-967898eb0d65?w=200&h=200&fit=crop", category: "Eletrodomésticos" },
+  { name: "Ferro de Passar a Vapor", value: 200, image: "https://images.unsplash.com/photo-1489274495757-95c7c837b101?w=200&h=200&fit=crop", category: "Eletrodomésticos" },
   // Experiências
   { name: "Lua de Mel", value: 1000, image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop", category: "Experiências" },
   { name: "Jantar Romântico", value: 300, image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=200&h=200&fit=crop", category: "Experiências" },

@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Calendar, Users, ArrowRight, Sparkles, CheckCircle2, Gift } from "lucide-react";
+import { Heart, Calendar, MapPin, ArrowRight, CheckCircle2, Gift, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const themes = [
-  { name: "Clássico", primary: "hsl(345, 75%, 62%)", accent: "hsl(37, 42%, 61%)", bg: "hsl(348, 100%, 98%)" },
-  { name: "Romântico", primary: "hsl(330, 60%, 55%)", accent: "hsl(280, 40%, 65%)", bg: "hsl(330, 50%, 97%)" },
-  { name: "Moderno", primary: "hsl(210, 60%, 45%)", accent: "hsl(170, 50%, 45%)", bg: "hsl(210, 30%, 97%)" },
+  { name: "Clássico", primary: "#E8547A", accent: "#C9A96E", bg: "#FFF8F9" },
+  { name: "Romântico", primary: "#C45C8A", accent: "#9B6FA0", bg: "#FDF6FB" },
+  { name: "Moderno", primary: "#3A6EA8", accent: "#2E9E82", bg: "#F6F9FD" },
 ];
 
 const weddingDate = new Date("2025-12-20T16:00:00");
@@ -25,61 +25,121 @@ const HeroSection = () => {
   const days = Math.max(0, differenceInDays(weddingDate, now));
   const hours = Math.max(0, differenceInHours(weddingDate, now) % 24);
   const minutes = Math.max(0, differenceInMinutes(weddingDate, now) % 60);
-
   const theme = themes[activeTheme];
 
   const scrollToHowItWorks = () => {
-    const el = document.getElementById("como-funciona");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <section
-      className="relative pt-32 pb-24 overflow-hidden"
+      className="relative pt-28 pb-20 overflow-hidden"
       style={{
-        background: `radial-gradient(ellipse at 20% 50%, rgba(232, 84, 122, 0.06) 0%, transparent 60%),
-                     radial-gradient(ellipse at 80% 20%, rgba(201, 169, 110, 0.06) 0%, transparent 60%),
-                     hsl(40, 20%, 98%)`,
+        background: `
+          radial-gradient(ellipse 80% 60% at 15% 60%, rgba(232,84,122,0.07) 0%, transparent 55%),
+          radial-gradient(ellipse 60% 50% at 85% 20%, rgba(201,169,110,0.07) 0%, transparent 55%),
+          radial-gradient(ellipse 40% 40% at 50% 100%, rgba(232,84,122,0.04) 0%, transparent 50%),
+          hsl(40, 20%, 98%)
+        `,
       }}
     >
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1470338950318-40320a722782?w=1200&q=30')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
+      {/* Decorative petal shapes */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <svg className="absolute -top-24 -right-24 w-[600px] h-[600px] opacity-[0.035]" viewBox="0 0 600 600" fill="none">
+          <circle cx="300" cy="300" r="280" stroke="#E8547A" strokeWidth="1" />
+          <circle cx="300" cy="300" r="220" stroke="#C9A96E" strokeWidth="0.5" />
+          <circle cx="300" cy="300" r="160" stroke="#E8547A" strokeWidth="0.5" />
+        </svg>
+        <svg className="absolute -bottom-32 -left-32 w-[500px] h-[500px] opacity-[0.03]" viewBox="0 0 500 500" fill="none">
+          <circle cx="250" cy="250" r="230" stroke="#E8547A" strokeWidth="1" />
+          <circle cx="250" cy="250" r="170" stroke="#C9A96E" strokeWidth="0.5" />
+        </svg>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-[55%_45%] gap-12 items-center">
+        <div className="grid lg:grid-cols-[52%_48%] gap-16 items-center">
+
+          {/* Left — Copy */}
           <motion.div
-            className="space-y-6"
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            className="space-y-7"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: [0.25, 0.4, 0.25, 1] }}
           >
-            <div className="inline-flex items-center gap-2 bg-primary/[0.08] text-primary px-4 py-1.5 rounded-full text-xs font-body font-medium">
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 border border-primary/20 bg-primary/[0.06] text-primary px-4 py-2 rounded-full text-xs font-body font-semibold tracking-wide"
+            >
               <Sparkles className="h-3.5 w-3.5" />
-              Plataforma completa para seu evento
+              Plataforma completa para casamentos e eventos
+            </motion.div>
+
+            {/* Headline */}
+            <div className="space-y-2">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="font-editorial text-lg text-muted-foreground italic tracking-wide"
+              >
+                O site dos seus sonhos,
+              </motion.p>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="font-script text-6xl md:text-7xl text-foreground leading-none"
+                style={{ color: "#1A1A2E" }}
+              >
+                criado com amor
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="font-editorial text-xl md:text-2xl text-muted-foreground leading-relaxed mt-3"
+              >
+                Personalize seu site, gerencie convidados, crie a lista de presentes e organize tudo — <em>em um só lugar.</em>
+              </motion.p>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground leading-tight tracking-tight">
-              Crie o{" "}
-              <em className="text-primary not-italic font-bold italic">site do seu casamento</em>{" "}
-              de forma prática e inesquecível
-            </h1>
+            {/* Social proof dots */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="flex items-center gap-3"
+            >
+              <div className="flex -space-x-2">
+                {["E8547A", "C9A96E", "3A6EA8", "9B6FA0"].map((c, i) => (
+                  <div
+                    key={i}
+                    className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center"
+                    style={{ background: `#${c}30` }}
+                  >
+                    <Heart className="w-3.5 h-3.5" style={{ color: `#${c}` }} />
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm font-body text-muted-foreground">
+                <span className="font-semibold text-foreground">+1.200 casais</span> já criaram seu site
+              </p>
+            </motion.div>
 
-            <p className="text-lg text-muted-foreground font-body leading-relaxed max-w-[480px]">
-              Personalize o site, gerencie convidados, crie sua lista de presentes e organize tudo em um só lugar.
-            </p>
-
-            <div className="flex flex-wrap gap-4">
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="flex flex-wrap gap-3"
+            >
               <Button
                 size="lg"
-                className="rounded-full px-8 py-3.5 font-medium gap-2 transition-all duration-300 hover:-translate-y-0.5"
+                className="rounded-full px-8 h-12 font-body font-semibold gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                style={{ background: "linear-gradient(135deg, #E8547A, #C9487A)" }}
                 asChild
               >
                 <Link to="/cadastro">
@@ -89,44 +149,78 @@ const HeroSection = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full px-8 py-3.5 border-border text-foreground/70 hover:bg-muted"
+                className="rounded-full px-8 h-12 font-body border-border/60 text-muted-foreground hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all duration-300"
                 onClick={scrollToHowItWorks}
               >
                 Ver como funciona
               </Button>
-            </div>
+            </motion.div>
+
+            {/* Trust items */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="flex flex-wrap gap-5 pt-1"
+            >
+              {[
+                "✓ Grátis para começar",
+                "✓ Sem cartão de crédito",
+                "✓ Pronto em minutos",
+              ].map((item) => (
+                <span key={item} className="text-xs font-body text-muted-foreground">{item}</span>
+              ))}
+            </motion.div>
           </motion.div>
 
+          {/* Right — Mockup Card */}
           <motion.div
             className="relative"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            initial={{ opacity: 0, y: 40, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
           >
+            {/* Card */}
             <div
-              className="rounded-3xl overflow-hidden p-6 transition-all duration-500"
+              className="relative rounded-3xl overflow-hidden transition-all duration-500"
               style={{
-                background: "rgba(255, 255, 255, 0.9)",
-                backdropFilter: "blur(24px)",
-                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.08)",
+                background: theme.bg,
+                boxShadow: "0 24px 80px rgba(0,0,0,0.10), 0 4px 20px rgba(232,84,122,0.08)",
+                border: "1px solid rgba(232,84,122,0.12)",
               }}
             >
-              <div className="text-center space-y-4">
-                <Heart className="h-7 w-7 mx-auto" style={{ color: theme.primary }} />
-                <p className="text-xs font-body tracking-widest uppercase" style={{ color: theme.accent }}>
-                  Convidam para o casamento
-                </p>
-                <h3 className="text-3xl font-display font-bold" style={{ color: theme.primary }}>
-                  Ana & Pedro
-                </h3>
-                <div className="flex items-center justify-center gap-2 text-sm font-body text-muted-foreground">
-                  <Calendar className="h-4 w-4" /> 20 de Dezembro de 2025
-                </div>
-                <div className="flex items-center justify-center gap-2 text-sm font-body text-muted-foreground">
-                  <Users className="h-4 w-4" /> Igreja Matriz — São Paulo, SP
+              {/* Subtle floral top bar */}
+              <div className="h-1.5 w-full" style={{ background: `linear-gradient(to right, ${theme.primary}88, ${theme.accent}88, ${theme.primary}88)` }} />
+
+              <div className="p-8 space-y-5">
+                {/* Event header */}
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="h-px flex-1" style={{ background: `${theme.accent}40` }} />
+                    <Heart className="w-4 h-4" style={{ color: theme.primary, fill: theme.primary }} />
+                    <div className="h-px flex-1" style={{ background: `${theme.accent}40` }} />
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.25em] font-body font-semibold" style={{ color: theme.accent }}>
+                    Convidam para o casamento
+                  </p>
+                  <h2
+                    className="font-script leading-none"
+                    style={{ fontSize: "2.8rem", color: theme.primary }}
+                  >
+                    Ana & Pedro
+                  </h2>
+                  <div className="flex items-center justify-center gap-4 text-xs font-body" style={{ color: `${theme.primary}99` }}>
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3" /> 20 de Dezembro de 2025
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-3 h-3" /> São Paulo, SP
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex justify-center gap-4 pt-4">
+                {/* Countdown */}
+                <div className="flex justify-center gap-3">
                   {[
                     { value: days, label: "Dias" },
                     { value: hours, label: "Horas" },
@@ -134,66 +228,73 @@ const HeroSection = () => {
                   ].map((item) => (
                     <div key={item.label} className="text-center">
                       <div
-                        className="text-2xl font-display font-bold rounded-xl w-16 h-16 flex items-center justify-center"
-                        style={{ background: `${theme.primary}10`, color: theme.primary }}
+                        className="text-2xl font-display font-bold rounded-2xl w-16 h-14 flex items-center justify-center"
+                        style={{ background: `${theme.primary}12`, color: theme.primary }}
                       >
-                        {item.value}
+                        {String(item.value).padStart(2, "0")}
                       </div>
-                      <span className="text-xs font-body text-muted-foreground mt-1">{item.label}</span>
+                      <span className="text-[10px] font-body mt-1 block" style={{ color: `${theme.primary}80` }}>{item.label}</span>
                     </div>
                   ))}
                 </div>
 
-                <button
-                  className="mt-4 px-6 py-2.5 rounded-full text-sm font-body font-medium text-white transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ background: theme.primary }}
-                >
-                  Confirmar presença
-                </button>
+                {/* CTA button */}
+                <div className="text-center pt-1">
+                  <button
+                    className="px-8 py-3 rounded-full text-sm font-body font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 shadow-md"
+                    style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.primary}CC)` }}
+                  >
+                    Confirmar Presença
+                  </button>
+                </div>
               </div>
             </div>
 
+            {/* Floating badges */}
             <motion.div
-              className="absolute -top-3 -right-3 md:top-4 md:-right-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8 }}
+              className="absolute -top-4 -right-4 md:-right-10 z-10 flex items-center gap-2.5 px-4 py-3 rounded-2xl"
+              initial={{ opacity: 0, x: 20, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ delay: 1.0 }}
               style={{
-                background: "rgba(255, 255, 255, 0.80)",
-                backdropFilter: "blur(12px)",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+                background: "rgba(255,255,255,0.92)",
+                backdropFilter: "blur(16px)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)",
               }}
             >
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <span className="text-sm font-body font-medium text-foreground">23 confirmações</span>
+              <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#3D8C40" }} />
+              <span className="text-sm font-body font-semibold text-foreground whitespace-nowrap">23 confirmações</span>
             </motion.div>
 
             <motion.div
-              className="absolute -bottom-3 -left-3 md:bottom-8 md:-left-8 z-10 flex items-center gap-2 px-4 py-3 rounded-2xl"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1 }}
+              className="absolute -bottom-4 -left-4 md:-left-10 z-10 flex items-center gap-2.5 px-4 py-3 rounded-2xl"
+              initial={{ opacity: 0, x: -20, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ delay: 1.2 }}
               style={{
-                background: "rgba(255, 255, 255, 0.80)",
-                backdropFilter: "blur(12px)",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+                background: "rgba(255,255,255,0.92)",
+                backdropFilter: "blur(16px)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)",
               }}
             >
-              <Gift className="h-4 w-4 text-primary" />
-              <span className="text-sm font-body font-medium text-foreground">12 presentes recebidos</span>
+              <Gift className="h-4 w-4 flex-shrink-0 text-primary" />
+              <span className="text-sm font-body font-semibold text-foreground whitespace-nowrap">12 presentes recebidos</span>
             </motion.div>
 
-            <div className="flex justify-center gap-3 mt-6">
+            {/* Theme switcher */}
+            <div className="flex justify-center gap-2 mt-8">
               {themes.map((t, i) => (
                 <button
                   key={t.name}
                   onClick={() => setActiveTheme(i)}
-                  className={`rounded-full px-4 py-2 text-xs font-body border transition-all duration-200 ${
+                  className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-body border transition-all duration-300"
+                  style={
                     i === activeTheme
-                      ? "border-primary bg-primary/[0.08] text-primary font-medium"
-                      : "border-border bg-card text-muted-foreground hover:border-primary/30"
-                  }`}
+                      ? { borderColor: theme.primary, background: `${theme.primary}12`, color: theme.primary, fontWeight: 600 }
+                      : { borderColor: "rgba(0,0,0,0.1)", background: "white", color: "#999" }
+                  }
                 >
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: t.primary }} />
                   {t.name}
                 </button>
               ))}

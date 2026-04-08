@@ -578,23 +578,29 @@ const DashboardSite = ({ event }: Props) => {
             </Button>
           </TabsContent>
 
-          <TabsContent value="secoes" className="space-y-3">
-            <p className="text-sm text-muted-foreground mb-4">Ative ou desative seções do seu site. Clique no ícone de paleta para customizar cores por seção.</p>
+          <TabsContent value="secoes" className="space-y-4">
+            <p className="text-sm text-muted-foreground">Ative ou desative seções do seu site. Clique no ícone de paleta para customizar as cores de cada seção individualmente.</p>
+            <div className="space-y-3">
             {sectionsList.map((section) => (
-              <div key={section.id}>
-                <div className="flex items-center justify-between rounded-xl border border-border p-4 hover:bg-muted/30 transition-colors">
+              <div key={section.id} className="rounded-2xl border border-border overflow-hidden">
+                <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-3">
-                    <section.icon className="w-4 h-4 text-secondary" />
-                    <span className="font-body text-sm text-foreground">{section.label}</span>
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <section.icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <span className="font-body text-sm font-medium text-foreground">{section.label}</span>
+                      <p className="text-xs text-muted-foreground">{enabledSections[section.id] ? "Visível no site" : "Oculta"}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => setSectionColorEditing(sectionColorEditing === section.id ? null : section.id)}
                       className={cn(
-                        "p-1.5 rounded-lg transition-colors text-muted-foreground hover:text-primary",
+                        "p-2 rounded-lg transition-colors text-muted-foreground hover:text-primary hover:bg-primary/10",
                         sectionColorEditing === section.id && "text-primary bg-primary/10"
                       )}
-                      title="Cores desta seção"
+                      title="Customizar cores desta seção"
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10" />
@@ -605,28 +611,28 @@ const DashboardSite = ({ event }: Props) => {
                   </div>
                 </div>
                 {sectionColorEditing === section.id && (
-                  <div className="ml-7 mt-2 mb-3 p-4 rounded-xl border border-border bg-muted/20 space-y-3">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Cores personalizadas para "{section.label}"</p>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Fundo</Label>
-                        <div className="flex items-center gap-1">
-                          <input type="color" value={sectionColors[section.id]?.bg || currentTheme.background} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
-                          <Input value={sectionColors[section.id]?.bg || ""} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
+                  <div className="p-5 border-t border-border bg-muted/20 space-y-4">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cores — {section.label}</p>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium">Fundo</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={sectionColors[section.id]?.bg || currentTheme.background} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} className="w-9 h-9 rounded-lg border border-border cursor-pointer shrink-0" />
+                          <Input value={sectionColors[section.id]?.bg || ""} onChange={(e) => updateSectionColor(section.id, "bg", e.target.value)} placeholder="Auto" className="font-mono text-xs h-9" />
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Texto</Label>
-                        <div className="flex items-center gap-1">
-                          <input type="color" value={sectionColors[section.id]?.text || "#333333"} onChange={(e) => updateSectionColor(section.id, "text", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
-                          <Input value={sectionColors[section.id]?.text || ""} onChange={(e) => updateSectionColor(section.id, "text", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium">Texto</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={sectionColors[section.id]?.text || "#333333"} onChange={(e) => updateSectionColor(section.id, "text", e.target.value)} className="w-9 h-9 rounded-lg border border-border cursor-pointer shrink-0" />
+                          <Input value={sectionColors[section.id]?.text || ""} onChange={(e) => updateSectionColor(section.id, "text", e.target.value)} placeholder="Auto" className="font-mono text-xs h-9" />
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Destaque</Label>
-                        <div className="flex items-center gap-1">
-                          <input type="color" value={sectionColors[section.id]?.accent || primaryColor} onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)} className="w-8 h-8 rounded border border-border cursor-pointer" />
-                          <Input value={sectionColors[section.id]?.accent || ""} onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)} placeholder="Auto" className="flex-1 font-mono text-xs h-8" />
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium">Destaque</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={sectionColors[section.id]?.accent || primaryColor} onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)} className="w-9 h-9 rounded-lg border border-border cursor-pointer shrink-0" />
+                          <Input value={sectionColors[section.id]?.accent || ""} onChange={(e) => updateSectionColor(section.id, "accent", e.target.value)} placeholder="Auto" className="font-mono text-xs h-9" />
                         </div>
                       </div>
                     </div>
@@ -634,6 +640,7 @@ const DashboardSite = ({ event }: Props) => {
                 )}
               </div>
             ))}
+            </div>
 
             {/* Save button */}
             <Button onClick={saveSections} disabled={isSaving} className="w-full rounded-full gap-2 mt-4">
@@ -716,38 +723,38 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
   const footerPal = pal("footer");
 
   return (
-    <div style={{ fontFamily: bodyFamily }} className="space-y-0">
+    <div style={{ fontFamily: bodyFamily }} className="divide-y divide-black/5">
       {/* Hero */}
       {enabledSections.hero !== false && (
-        <div className="relative py-20 px-6 flex flex-col items-center justify-center text-center"
-          style={{ background: `linear-gradient(135deg, ${heroPal.bg}, ${heroPal.accent}22)`, minHeight: 240 }}>
-          <Heart className="w-8 h-8 mb-3" style={{ color: heroPal.accent }} />
-          <p className="text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${heroPal.accent}CC` }}>
+        <div className="relative px-6 py-16 flex flex-col items-center justify-center text-center"
+          style={{ background: `linear-gradient(160deg, ${heroPal.bg} 60%, ${heroPal.accent}18)`, minHeight: 260 }}>
+          <Heart className="w-7 h-7 mb-4" style={{ color: heroPal.accent }} />
+          <p className="text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${heroPal.accent}BB` }}>
             Convidam para o casamento
           </p>
-          <h2 className="text-3xl font-semibold tracking-tight mb-2" style={{ color: heroPal.accent, fontFamily: titleFamily }}>
+          <h2 className="text-3xl font-semibold tracking-tight mb-3" style={{ color: heroPal.accent, fontFamily: titleFamily }}>
             {eventName || "Seu Evento"}
           </h2>
-          <p className="text-xs mt-1" style={{ color: `${heroPal.text}99` }}>
-            {eventDate ? format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
-          </p>
           {eventLocation && (
-            <p className="text-xs mt-1 flex items-center gap-1" style={{ color: `${heroPal.text}99` }}>
+            <p className="text-[11px] mt-1 flex items-center gap-1" style={{ color: `${heroPal.text}88` }}>
               <MapPin className="w-3 h-3" /> {eventLocation}
             </p>
           )}
+          <p className="text-[11px] mt-1" style={{ color: `${heroPal.text}88` }}>
+            {eventDate ? format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
+          </p>
         </div>
       )}
 
       {/* Countdown */}
       {enabledSections.countdown && (
-        <div className="py-6 text-center border-t" style={{ borderColor: `${primaryColor}15`, background: bgColor }}>
-          <p className="text-[10px] uppercase tracking-widest mb-3" style={{ color: primaryColor }}>Faltam</p>
-          <div className="flex justify-center gap-4">
+        <div className="py-8 px-6 text-center" style={{ background: bgColor }}>
+          <p className="text-[10px] uppercase tracking-widest mb-4" style={{ color: primaryColor }}>Faltam</p>
+          <div className="flex justify-center gap-6">
             {[{ n: "180", l: "Dias" }, { n: "12", l: "Horas" }, { n: "45", l: "Min" }].map((item) => (
               <div key={item.l} className="text-center">
-                <span className="text-xl font-semibold" style={{ color: secondaryColor }}>{item.n}</span>
-                <span className="block text-[10px]" style={{ color: `${secondaryColor}99` }}>{item.l}</span>
+                <span className="text-2xl font-semibold" style={{ color: secondaryColor }}>{item.n}</span>
+                <span className="block text-[10px] mt-0.5" style={{ color: `${secondaryColor}99` }}>{item.l}</span>
               </div>
             ))}
           </div>
@@ -756,9 +763,9 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Story */}
       {enabledSections.story && (
-        <div className="px-6 py-12 text-center" style={{ background: storyPal.bg }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] mb-2 font-semibold" style={{ color: storyPal.accent }}>Nossa História</p>
-          <p className="text-xs leading-relaxed" style={{ color: storyPal.text }}>
+        <div className="px-6 py-14 text-center" style={{ background: storyPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: storyPal.accent }}>Nossa História</p>
+          <p className="text-[11px] leading-relaxed max-w-xs mx-auto" style={{ color: `${storyPal.text}CC` }}>
             {story ? (story.length > 120 ? story.slice(0, 120) + "..." : story) : "Conte como vocês se conheceram..."}
           </p>
         </div>
@@ -766,11 +773,11 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Gallery placeholder */}
       {enabledSections.gallery && (
-        <div className="px-6 py-10" style={{ background: galleryPal.bg }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-3 font-semibold" style={{ color: galleryPal.accent }}>Galeria</p>
-          <div className="grid grid-cols-3 gap-1.5">
+        <div className="px-6 py-12" style={{ background: galleryPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-4 font-semibold" style={{ color: galleryPal.accent }}>Galeria</p>
+          <div className="grid grid-cols-3 gap-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="aspect-square rounded-lg" style={{ background: `${galleryPal.accent}15` }} />
+              <div key={i} className="aspect-square rounded-xl" style={{ background: `${galleryPal.accent}18` }} />
             ))}
           </div>
         </div>
@@ -782,14 +789,14 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
           <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-4 font-semibold" style={{ color: infoPal.accent }}>Informações</p>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { icon: Calendar, label: "Data" },
+              { icon: CalendarIcon, label: "Data" },
               { icon: MapPin, label: "Local" },
               { icon: Users, label: "Traje" },
               { icon: Clock, label: "Horário" },
             ].map((c) => (
-              <div key={c.label} className="text-center p-4 rounded-xl" style={{ background: `${infoPal.text}06`, border: `1px solid ${infoPal.accent}15` }}>
-                <c.icon className="w-4 h-4 mx-auto mb-1.5" style={{ color: infoPal.accent }} />
-                <span className="text-[10px]" style={{ color: infoPal.text }}>{c.label}</span>
+              <div key={c.label} className="text-center p-5 rounded-xl" style={{ background: `${infoPal.accent}12`, border: `1px solid ${infoPal.accent}25` }}>
+                <c.icon className="w-5 h-5 mx-auto mb-2" style={{ color: infoPal.accent }} />
+                <span className="text-[11px] font-medium" style={{ color: infoPal.text }}>{c.label}</span>
               </div>
             ))}
           </div>
@@ -798,17 +805,19 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Playlist */}
       {enabledSections.playlist && (
-        <div className="px-6 py-8 text-center" style={{ background: playlistPal.bg }}>
-          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: playlistPal.accent }}>
-            <Music className="w-3.5 h-3.5" /> Nossa Playlist
+        <div className="px-6 py-12 text-center" style={{ background: playlistPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: playlistPal.accent }}>Nossa Playlist</p>
+          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: `${playlistPal.text}88` }}>
+            <Music className="w-4 h-4" style={{ color: playlistPal.accent }} /> As músicas que marcam nossa história
           </div>
         </div>
       )}
 
       {/* RSVP */}
       {enabledSections.rsvp && (
-        <div className="px-6 py-10 text-center" style={{ background: rsvpPal.bg }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] mb-4 font-semibold" style={{ color: rsvpPal.accent }}>Confirmar Presença</p>
+        <div className="px-6 py-14 text-center" style={{ background: rsvpPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: rsvpPal.accent }}>Confirmar Presença</p>
+          <p className="text-[11px] mb-5" style={{ color: `${rsvpPal.text}99` }}>Será uma honra ter você conosco</p>
           <button className="rounded-full px-6 py-2.5 text-xs font-medium"
             style={{ backgroundColor: rsvpPal.accent, color: getReadableTextColor(rsvpPal.accent) }}>
             Confirmar Presença
@@ -818,13 +827,13 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Gifts */}
       {enabledSections.gifts && (
-        <div className="px-6 py-10 text-center" style={{ background: giftsPal.bg }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] mb-4 font-semibold" style={{ color: giftsPal.accent }}>Lista de Presentes</p>
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2].map((i) => (
-              <div key={i} className="p-4 rounded-xl text-center" style={{ background: `${giftsPal.text}08`, border: `1px solid ${giftsPal.accent}15` }}>
-                <Gift className="w-5 h-5 mx-auto mb-1.5" style={{ color: giftsPal.accent }} />
-                <span className="text-[10px]" style={{ color: giftsPal.text }}>Presente {i}</span>
+        <div className="px-6 py-12" style={{ background: giftsPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-4 font-semibold" style={{ color: giftsPal.accent }}>Lista de Presentes</p>
+          <div className="grid grid-cols-3 gap-2">
+            {["Cozinha", "Quarto", "Experiência"].map((label) => (
+              <div key={label} className="p-4 rounded-xl text-center" style={{ background: `${giftsPal.accent}12`, border: `1px solid ${giftsPal.accent}20` }}>
+                <Gift className="w-5 h-5 mx-auto mb-2" style={{ color: giftsPal.accent }} />
+                <span className="text-[10px] font-medium" style={{ color: giftsPal.text }}>{label}</span>
               </div>
             ))}
           </div>
@@ -833,9 +842,10 @@ const PreviewContent = ({ primaryColor, secondaryColor, selectedFont, selectedBo
 
       {/* Wall */}
       {enabledSections.wall && (
-        <div className="px-6 py-8 text-center" style={{ background: wallPal.bg }}>
-          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: wallPal.accent }}>
-            <MessageCircle className="w-3.5 h-3.5" /> Mural de Recados
+        <div className="px-6 py-12 text-center" style={{ background: wallPal.bg }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3 font-semibold" style={{ color: wallPal.accent }}>Mural de Recados</p>
+          <div className="flex items-center justify-center gap-2 text-xs" style={{ color: `${wallPal.text}88` }}>
+            <MessageCircle className="w-4 h-4" style={{ color: wallPal.accent }} /> Deixe uma mensagem para os noivos
           </div>
         </div>
       )}
